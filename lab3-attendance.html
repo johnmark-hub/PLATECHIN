@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EduTrack – Attendance Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0a0f1e;--surface:#111827;--card:#161f35;--border:#1e2d4a;--accent:#4f8ef7;--accent2:#7c5cfc;--gold:#f0b429;--text:#e8edf5;--muted:#6b7a99;--present:#10b981;--absent:#ef4444;--late:#f59e0b;--present-bg:rgba(16,185,129,0.1);--absent-bg:rgba(239,68,68,0.1);--late-bg:rgba(245,158,11,0.1);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 10% 5%,rgba(79,142,247,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 90% 90%,rgba(124,92,252,0.07) 0%,transparent 60%);pointer-events:none;z-index:0;}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+    .sidebar-logo{padding:28px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+    .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(79,142,247,0.3);}
+    .logo-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .sidebar-nav{flex:1;padding:20px 12px;display:flex;flex-direction:column;gap:4px;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:14px;color:var(--muted);font-weight:500;transition:all 0.2s;text-decoration:none;}
+    .nav-item:hover{background:var(--surface);color:var(--text);}
+    .nav-item.active{background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(124,92,252,0.15));color:var(--accent);border:1px solid rgba(79,142,247,0.2);}
+    .nav-section{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);padding:16px 14px 6px;font-weight:600;}
+    .sidebar-footer{padding:20px;border-top:1px solid var(--border);}
+    .user-card{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;}
+    .user-info .name{font-size:13px;font-weight:600;}
+    .user-info .role{font-size:11px;color:var(--muted);}
+    .logout-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-top:10px;font-family:'DM Sans',sans-serif;transition:all 0.2s;width:100%;}
+    .logout-btn:hover{border-color:var(--absent);color:var(--absent);}
+    .main{margin-left:240px;padding:32px;position:relative;z-index:1;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
+    .topbar h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;}
+    .topbar h1 span{color:var(--accent);}
+    .topbar-actions{display:flex;align-items:center;gap:12px;}
+    .btn{padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:all 0.2s;}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 12px rgba(79,142,247,0.3);}
+    .btn-primary:hover{transform:translateY(-1px);}
+    .btn-outline{background:var(--card);border:1px solid var(--border);color:var(--text);}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+    .summary-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:transform 0.2s;}
+    .summary-card:hover{transform:translateY(-2px);}
+    .summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .summary-card.total::before{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+    .summary-card.present::before{background:var(--present);}
+    .summary-card.absent::before{background:var(--absent);}
+    .summary-card.late::before{background:var(--late);}
+    .summary-card .s-icon{font-size:22px;margin-bottom:10px;}
+    .summary-card .s-num{font-size:32px;font-weight:700;line-height:1;}
+    .summary-card.present .s-num{color:var(--present);}
+    .summary-card.absent .s-num{color:var(--absent);}
+    .summary-card.late .s-num{color:var(--late);}
+    .summary-card.total .s-num{color:var(--accent);}
+    .summary-card .s-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;}
+    .controls-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+    .search-wrap{position:relative;flex:1;min-width:200px;}
+    .search-wrap input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px 10px 38px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .search-wrap input:focus{border-color:var(--accent);}
+    .search-wrap input::placeholder{color:var(--muted);}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);}
+    .filter-select{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;cursor:pointer;}
+    .filter-select:focus{border-color:var(--accent);}
+    .filter-select option{background:var(--surface);}
+    .table-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+    .table-header-bar{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .table-header-bar h2{font-size:15px;font-weight:700;}
+    .bulk-actions{display:flex;gap:8px;}
+    .bulk-btn{padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+    .bulk-present{color:var(--present);border-color:rgba(16,185,129,0.3);}
+    .bulk-present:hover{background:var(--present-bg);}
+    .bulk-absent{color:var(--absent);border-color:rgba(239,68,68,0.3);}
+    .bulk-absent:hover{background:var(--absent-bg);}
+    .bulk-late{color:var(--late);border-color:rgba(245,158,11,0.3);}
+    .bulk-late:hover{background:var(--late-bg);}
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:12px 20px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);}
+    tbody tr{border-bottom:1px solid rgba(30,45,74,0.5);transition:background 0.15s;}
+    tbody tr:last-child{border-bottom:none;}
+    tbody tr:hover{background:rgba(79,142,247,0.04);}
+    td{padding:14px 20px;font-size:13px;}
+    .student-cell{display:flex;align-items:center;gap:12px;}
+    .stu-avatar{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+    .stu-name{font-weight:600;font-size:13px;}
+    .stu-id{font-size:11px;color:var(--muted);}
+    .status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+    .badge-present{background:var(--present-bg);color:var(--present);border:1px solid rgba(16,185,129,0.2);}
+    .badge-absent{background:var(--absent-bg);color:var(--absent);border:1px solid rgba(239,68,68,0.2);}
+    .badge-late{background:var(--late-bg);color:var(--late);border:1px solid rgba(245,158,11,0.2);}
+    .badge-none{background:rgba(107,122,153,0.1);color:var(--muted);border:1px solid var(--border);}
+    .action-btns{display:flex;gap:6px;}
+    .att-btn{padding:6px 14px;border-radius:8px;border:1.5px solid transparent;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.3px;}
+    .att-btn.p{border-color:rgba(16,185,129,0.3);color:var(--present);background:none;}
+    .att-btn.p:hover,.att-btn.p.selected{background:var(--present);color:#fff;border-color:var(--present);}
+    .att-btn.a{border-color:rgba(239,68,68,0.3);color:var(--absent);background:none;}
+    .att-btn.a:hover,.att-btn.a.selected{background:var(--absent);color:#fff;border-color:var(--absent);}
+    .att-btn.l{border-color:rgba(245,158,11,0.3);color:var(--late);background:none;}
+    .att-btn.l:hover,.att-btn.l.selected{background:var(--late);color:#fff;border-color:var(--late);}
+    .att-btn.del{border-color:rgba(239,68,68,0.3);color:var(--absent);background:none;}
+    .att-btn.del:hover{background:var(--absent);color:#fff;border-color:var(--absent);}
+    .check-col input[type="checkbox"]{accent-color:var(--accent);cursor:pointer;width:15px;height:15px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;}
+    .modal-overlay.show{display:flex;}
+    .modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;width:90%;max-width:480px;animation:popIn 0.3s cubic-bezier(0.22,1,0.36,1);}
+    @keyframes popIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
+    .modal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .modal-top h3{font-family:'Playfair Display',serif;font-size:20px;}
+    .close-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+    .close-btn:hover{color:var(--text);}
+    .modal-field{margin-bottom:16px;}
+    .modal-field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px;}
+    .modal-field input,.modal-field select{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .modal-field input:focus,.modal-field select:focus{border-color:var(--accent);}
+    .modal-field select option{background:var(--surface);}
+    .modal-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .modal-field-alert{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none;}
+    .modal-field-alert.error{background:var(--absent-bg);color:var(--absent);border:1px solid rgba(239,68,68,0.2);display:block;}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;}
+    .modal-actions .btn{flex:1;padding:12px;}
+    .cal-day{padding:8px 4px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--text);transition:all 0.15s;border:1.5px solid transparent;position:relative;}
+    .cal-day:hover{background:var(--surface);border-color:var(--accent);}
+    .cal-day.today{border-color:var(--accent);color:var(--accent);font-weight:700;}
+    .cal-day.selected{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;}
+    .cal-day.has-data::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--present);}
+    .cal-day.empty{cursor:default;}
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;z-index:9999;transform:translateY(60px);opacity:0;transition:all 0.35s cubic-bezier(0.22,1,0.36,1);box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.present{border-left:3px solid var(--present);}
+    .toast.absent{border-left:3px solid var(--absent);}
+    .toast.late{border-left:3px solid var(--late);}
+    .toast.info{border-left:3px solid var(--accent);}
+    @media(max-width:900px){.sidebar{width:64px;}.sidebar .logo-name,.sidebar .nav-item span,.sidebar-footer .user-info,.sidebar .nav-section,.logout-btn{display:none;}.main{margin-left:64px;}.summary-row{grid-template-columns:repeat(2,1fr);}}
+  </style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="logo-icon">🎓</div><span class="logo-name">EduTrack</span></div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <a href="lab3-attendance.html" class="nav-item active">📋 <span>Attendance</span></a>
+    <a href="lab4-reports.html" class="nav-item">📊 <span>Reports</span></a>
+    <div class="nav-section">Admin</div>
+    <a href="#" class="nav-item" onclick="openAddStudent()">➕ <span>Add Student</span></a>
+    <a href="index.html" class="nav-item">⚙️ <span>Settings</span></a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div class="user-info"><div class="name" id="sidebarName">Teacher</div><div class="role" id="sidebarRole">Teacher</div></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
+  </div>
+</nav>
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1>Attendance <span>Management</span></h1>
+      <p style="color:var(--muted);font-size:13px;margin-top:4px;">Mark and manage student attendance records</p>
+    </div>
+    <div class="topbar-actions">
+      <input type="date" id="dateFilter" onchange="loadForDate()" style="background:#fff;color:#0a0f1e;border:1px solid #fff;border-radius:10px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:none;"/>
+      <button class="btn btn-outline" onclick="openAddStudent()">➕ Add Student</button>
+      <button class="btn btn-primary" onclick="saveAttendance()">💾 Save Attendance</button>
+    </div>
+  </div>
+  <div class="summary-row">
+    <div class="summary-card total"><div class="s-icon">👥</div><div class="s-num" id="totalCount">0</div><div class="s-label">Total Students</div></div>
+    <div class="summary-card present"><div class="s-icon">✅</div><div class="s-num" id="presentCount">0</div><div class="s-label">Present</div></div>
+    <div class="summary-card absent"><div class="s-icon">❌</div><div class="s-num" id="absentCount">0</div><div class="s-label">Absent</div></div>
+    <div class="summary-card late"><div class="s-icon">⏰</div><div class="s-num" id="lateCount">0</div><div class="s-label">Late</div></div>
+  </div>
+  <div class="controls-bar">
+    <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="searchInput" placeholder="Search students..." oninput="filterTable()"/></div>
+    <select class="filter-select" id="sectionFilter" onchange="filterTable()"><option value="">All Sections</option></select>
+    <select class="filter-select" id="statusFilter" onchange="filterTable()">
+      <option value="">All Statuses</option>
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+      <option value="Late">Late</option>
+      <option value="None">Not Marked</option>
+    </select>
+    <button class="btn" onclick="toggleCalendar()" style="background:#fff;color:#0a0f1e;border:1px solid #fff;">📅 Pick Date</button>
+  </div>
+  <div id="calendarPanel" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <button onclick="prevMonth()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:16px;">‹</button>
+      <span id="calMonthLabel" style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;"></span>
+      <button onclick="nextMonth()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:16px;">›</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:8px;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px;">Sun</div><div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px;">Mon</div><div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px;">Tue</div><div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px;">Wed</div><div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px;">Thu</div><div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px;">Fri</div><div style="font-size:11px;font-weight:700;color:var(--muted);padding:4px;">Sat</div>
+    </div>
+    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;"></div>
+    <div style="margin-top:14px;font-size:12px;color:var(--muted);text-align:center;">Selected: <strong style="color:var(--accent)" id="calSelectedLabel">—</strong></div>
+  </div>
+  <div class="table-card">
+    <div class="table-header-bar">
+      <h2 id="tableTitle">Today's Attendance</h2>
+      <div class="bulk-actions">
+        <button class="bulk-btn bulk-present" onclick="bulkMark('Present')">✅ All Present</button>
+        <button class="bulk-btn bulk-absent" onclick="bulkMark('Absent')">❌ All Absent</button>
+        <button class="bulk-btn bulk-late" onclick="bulkMark('Late')">⏰ All Late</button>
+      </div>
+    </div>
+    <table id="attendanceTable">
+      <thead>
+        <tr>
+          <th class="check-col"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"/></th>
+          <th>Student</th><th>Email</th><th>Section</th><th>Grade</th><th>Status</th><th>Mark Attendance</th><th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="studentTableBody"></tbody>
+    </table>
+  </div>
+</main>
+<!-- ADD STUDENT MODAL -->
+<div class="modal-overlay" id="addStudentModal">
+  <div class="modal-box">
+    <div class="modal-top"><h3>Add New Student</h3><button class="close-btn" onclick="closeAddStudent()">✕</button></div>
+    <div id="addStudentAlert" class="modal-field-alert"></div>
+    <div class="modal-row">
+      <div class="modal-field"><label>First Name</label><input type="text" id="stuFirst" placeholder="Juan"/></div>
+      <div class="modal-field"><label>Last Name</label><input type="text" id="stuLast" placeholder="Dela Cruz"/></div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field"><label>Email</label><input type="email" id="stuEmail" placeholder="student@email.com"/></div>
+      <div class="modal-field"><label>Grade Level</label>
+        <select id="stuGrade"><option value="">Select Grade</option><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option></select>
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field"><label>Section</label><input type="text" id="stuSection" placeholder="e.g. Rizal"/></div>
+      <div class="modal-field"><label>Gender</label>
+        <select id="stuGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+    </div>
+    <div style="background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8;">
+      🔐 <strong style="color:var(--accent)">Auto-generated login credentials:</strong><br/>
+      📧 Email: <strong style="color:var(--text)">your entered email</strong><br/>
+      🔑 Password: <strong style="color:var(--text)">Auto-generated Student ID (shown in toast)</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeAddStudent()">Cancel</button>
+      <button class="btn btn-primary" onclick="addStudent()">Add Student →</button>
+    </div>
+  </div>
+</div>
+<!-- DELETE STUDENT MODAL -->
+<div class="modal-overlay" id="deleteStudentModal">
+  <div class="modal-box" style="max-width:400px;text-align:center;">
+    <div style="font-size:44px;margin-bottom:14px;">🗑️</div>
+    <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:10px;">Remove Student?</h3>
+    <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:6px;">You are about to remove</p>
+    <p style="font-size:15px;font-weight:700;margin-bottom:20px;" id="deleteStudentName">—</p>
+    <p style="color:var(--absent);font-size:12px;font-weight:600;margin-bottom:24px;">This will also delete all their attendance records.</p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline" style="flex:1;padding:12px;" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn" style="flex:1;padding:12px;background:var(--absent);color:#fff;border:none;" onclick="deleteStudent()">Yes, Remove</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+  const COLORS=['#4f8ef7','#7c5cfc','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4','#8b5cf6'];
+  function getStudents(){return JSON.parse(localStorage.getItem('edutrack_students')||'[]');}
+  function saveStudents(s){localStorage.setItem('edutrack_students',JSON.stringify(s));}
+  function getAttendanceData(){return JSON.parse(localStorage.getItem('edutrack_attendance')||'{}');}
+  function saveAttendanceData(d){localStorage.setItem('edutrack_attendance',JSON.stringify(d));}
+  function getAdmins(){return JSON.parse(localStorage.getItem('edutrack_admins')||'[]');}
+  function saveAdmins(a){localStorage.setItem('edutrack_admins',JSON.stringify(a));}
+
+  let currentDate=new Date().toISOString().split('T')[0];
+  let attendanceMap={};
+  let calYear,calMonth;
+
+  window.onload=function(){
+    document.getElementById('dateFilter').value=currentDate;
+    const d=new Date(currentDate+'T00:00:00');
+    calYear=d.getFullYear();calMonth=d.getMonth();
+    const user=JSON.parse(localStorage.getItem('edutrack_current_user')||'{"firstName":"Teacher","lastName":"","role":"Teacher"}');
+    document.getElementById('sidebarName').textContent=user.firstName+' '+(user.lastName||'');
+    document.getElementById('sidebarRole').textContent=user.role||'Teacher';
+    document.getElementById('sidebarAvatar').textContent=user.firstName[0].toUpperCase();
+    loadForDate();
+  };
+
+  function loadForDate(){
+    currentDate=document.getElementById('dateFilter').value||currentDate;
+    const allAttendance=getAttendanceData();
+    attendanceMap=allAttendance[currentDate]?{...allAttendance[currentDate]}:{};
+    renderTable();updateSummary();updateSectionFilter();
+  }
+
+  function renderTable(){
+    const students=getStudents();
+    const tbody=document.getElementById('studentTableBody');
+    if(students.length===0){
+      tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">No students yet. Click <strong style="color:var(--accent)">➕ Add Student</strong> to get started.</td></tr>`;
+      updateSummary();return;
+    }
+    const search=document.getElementById('searchInput').value.toLowerCase();
+    const sectionF=document.getElementById('sectionFilter').value;
+    const statusF=document.getElementById('statusFilter').value;
+    const filtered=students.filter(s=>{
+      const name=(s.firstName+' '+s.lastName).toLowerCase();
+      const matchSearch=name.includes(search)||s.id.toLowerCase().includes(search);
+      const matchSection=!sectionF||s.section===sectionF;
+      const status=attendanceMap[s.id]||'None';
+      const matchStatus=!statusF||status===statusF;
+      return matchSearch&&matchSection&&matchStatus;
+    });
+    tbody.innerHTML=filtered.map(s=>{
+      const status=attendanceMap[s.id]||'None';
+      const badgeClass=status==='Present'?'badge-present':status==='Absent'?'badge-absent':status==='Late'?'badge-late':'badge-none';
+      const color=COLORS[s.colorIdx%COLORS.length];
+      const initials=s.firstName[0]+s.lastName[0];
+      const time=attendanceMap[s.id+'_time']||'—';
+      return `<tr id="row-${s.id}">
+        <td class="check-col"><input type="checkbox" class="row-check" data-id="${s.id}"/></td>
+        <td><div class="student-cell"><div class="stu-avatar" style="background:${color}">${initials}</div><div><div class="stu-name">${s.firstName} ${s.lastName}</div><div class="stu-id">${s.id}</div></div></div></td>
+        <td style="color:var(--muted);font-size:13px">${s.email||'—'}</td>
+        <td style="color:var(--muted);font-size:13px">${s.section}</td>
+        <td style="color:var(--muted);font-size:13px">${s.grade}</td>
+        <td><span class="status-badge ${badgeClass}">● ${status}</span></td>
+        <td><div class="action-btns">
+          <button class="att-btn p ${status==='Present'?'selected':''}" onclick="markAttendance('${s.id}','Present')">P</button>
+          <button class="att-btn a ${status==='Absent'?'selected':''}" onclick="markAttendance('${s.id}','Absent')">A</button>
+          <button class="att-btn l ${status==='Late'?'selected':''}" onclick="markAttendance('${s.id}','Late')">L</button>
+          <button class="att-btn del" onclick="confirmDeleteStudent('${s.id}','${s.firstName} ${s.lastName}')">🗑️</button>
+        </div></td>
+        <td style="color:var(--muted);font-size:12px">${time}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('totalCount').textContent=students.length;
+    updateSummary();
+  }
+
+  function updateSummary(){
+    const students=getStudents();
+    let p=0,a=0,l=0;
+    students.forEach(s=>{const st=attendanceMap[s.id];if(st==='Present')p++;else if(st==='Absent')a++;else if(st==='Late')l++;});
+    document.getElementById('presentCount').textContent=p;
+    document.getElementById('absentCount').textContent=a;
+    document.getElementById('lateCount').textContent=l;
+    document.getElementById('totalCount').textContent=students.length;
+  }
+
+  function updateSectionFilter(){
+    const students=getStudents();
+    const sections=[...new Set(students.map(s=>s.section))].sort();
+    const sel=document.getElementById('sectionFilter');
+    const current=sel.value;
+    sel.innerHTML='<option value="">All Sections</option>'+sections.map(sec=>`<option ${sec===current?'selected':''}>${sec}</option>`).join('');
+  }
+
+  function filterTable(){renderTable();}
+
+  function markAttendance(studentId,status){
+    const now=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+    attendanceMap[studentId]=status;
+    attendanceMap[studentId+'_time']=now;
+    renderTable();
+    showToast(status==='Present'?'✅':status==='Absent'?'❌':'⏰',`Marked as ${status}`,status.toLowerCase());
+  }
+
+  function bulkMark(status){
+    const checks=document.querySelectorAll('.row-check:checked');
+    let targets=checks.length>0?[...checks].map(c=>c.dataset.id):getStudents().map(s=>s.id);
+    const now=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+    targets.forEach(id=>{attendanceMap[id]=status;attendanceMap[id+'_time']=now;});
+    renderTable();
+    showToast(status==='Present'?'✅':status==='Absent'?'❌':'⏰',`${targets.length} students marked ${status}`,status.toLowerCase());
+  }
+
+  function toggleSelectAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
+
+  function saveAttendance(){
+    const all=getAttendanceData();
+    all[currentDate]={...attendanceMap};
+    saveAttendanceData(all);
+    showToast('💾','Attendance saved successfully!','info');
+  }
+
+  function openAddStudent(){document.getElementById('addStudentModal').classList.add('show');}
+
+  function closeAddStudent(){
+    document.getElementById('addStudentModal').classList.remove('show');
+    document.getElementById('addStudentAlert').className='modal-field-alert';
+    ['stuFirst','stuLast','stuEmail','stuSection'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('stuGrade').value='';
+    document.getElementById('stuGender').value='';
+  }
+
+  function addStudent(){
+    const firstName=document.getElementById('stuFirst').value.trim();
+    const lastName=document.getElementById('stuLast').value.trim();
+    const email=document.getElementById('stuEmail').value.trim();
+    const grade=document.getElementById('stuGrade').value;
+    const section=document.getElementById('stuSection').value.trim();
+    const gender=document.getElementById('stuGender').value;
+    const alertEl=document.getElementById('addStudentAlert');
+    if(!firstName||!lastName||!email||!grade||!section||!gender){alertEl.textContent='⚠️ Please fill in all fields.';alertEl.className='modal-field-alert error';return;}
+    if(!/\S+@\S+\.\S+/.test(email)){alertEl.textContent='⚠️ Please enter a valid email address.';alertEl.className='modal-field-alert error';return;}
+    const students=getStudents();
+    if(students.find(s=>s.email===email)){alertEl.textContent='⚠️ A student with this email already exists.';alertEl.className='modal-field-alert error';return;}
+    const id='STU-'+Date.now().toString().slice(-5);
+    const colorIdx=students.length%COLORS.length;
+    students.push({id,firstName,lastName,email,grade,section,gender,colorIdx});
+    saveStudents(students);
+    const admins=getAdmins().filter(a=>a.email!==email);
+    admins.push({firstName,lastName,email,role:'Student',password:id});
+    saveAdmins(admins);
+    closeAddStudent();
+    loadForDate();
+    showToast('➕',`${firstName} ${lastName} added! Email: ${email} | Password: ${id}`,'info');
+  }
+
+  let studentToDelete=null;
+
+  function confirmDeleteStudent(id,name){
+    studentToDelete=id;
+    document.getElementById('deleteStudentName').textContent=name;
+    document.getElementById('deleteStudentModal').classList.add('show');
+  }
+
+  function closeDeleteModal(){document.getElementById('deleteStudentModal').classList.remove('show');studentToDelete=null;}
+
+  function deleteStudent(){
+    if(!studentToDelete)return;
+    let students=getStudents();
+    const removed=students.find(s=>s.id===studentToDelete);
+    students=students.filter(s=>s.id!==studentToDelete);
+    saveStudents(students);
+    if(removed){saveAdmins(getAdmins().filter(a=>a.email!==removed.email));}
+    const all=getAttendanceData();
+    Object.keys(all).forEach(date=>{delete all[date][studentToDelete];delete all[date][studentToDelete+'_time'];});
+    saveAttendanceData(all);
+    closeDeleteModal();loadForDate();
+    showToast('🗑️','Student removed successfully.','absent');
+  }
+
+  let toastTimer;
+  function showToast(icon,msg,type){
+    const t=document.getElementById('toast');
+    t.innerHTML=`${icon} ${msg}`;
+    t.className=`toast show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>t.className='toast',2800);
+  }
+
+  function logout(){localStorage.removeItem('edutrack_current_user');window.location.href='index.html';}
+
+  function toggleCalendar(){
+    const panel=document.getElementById('calendarPanel');
+    const isHidden=panel.style.display==='none';
+    panel.style.display=isHidden?'block':'none';
+    if(isHidden)renderCalendar();
+  }
+
+  function renderCalendar(){
+    const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calMonthLabel').textContent=`${months[calMonth]} ${calYear}`;
+    const allAttendance=getAttendanceData();
+    const firstDay=new Date(calYear,calMonth,1).getDay();
+    const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+    const todayStr=new Date().toISOString().split('T')[0];
+    let html='';
+    for(let i=0;i<firstDay;i++)html+=`<div class="cal-day empty"></div>`;
+    for(let d=1;d<=daysInMonth;d++){
+      const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday=dateStr===todayStr;
+      const isSelected=dateStr===currentDate;
+      const hasData=allAttendance[dateStr]&&Object.keys(allAttendance[dateStr]).length>0;
+      const classes=['cal-day',isToday?'today':'',isSelected?'selected':'',hasData?'has-data':''].filter(Boolean).join(' ');
+      html+=`<div class="${classes}" onclick="selectCalDate('${dateStr}')">${d}</div>`;
+    }
+    document.getElementById('calGrid').innerHTML=html;
+    document.getElementById('calSelectedLabel').textContent=new Date(currentDate+'T00:00:00').toLocaleDateString('en-PH',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  }
+
+  function selectCalDate(dateStr){currentDate=dateStr;document.getElementById('dateFilter').value=dateStr;loadForDate();renderCalendar();}
+  function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+  function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+</script>
+</body>
+</html>

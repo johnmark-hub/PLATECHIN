@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EduTrack – Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0a0f1e;--surface:#111827;--card:#161f35;--border:#1e2d4a;--accent:#4f8ef7;--accent2:#7c5cfc;--gold:#f0b429;--text:#e8edf5;--muted:#6b7a99;--success:#10b981;--danger:#ef4444;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(79,142,247,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 80%,rgba(124,92,252,0.10) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 50% 50%,rgba(240,180,41,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;}
+    body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,0.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+    .page-wrapper{position:relative;z-index:1;width:100%;max-width:1100px;padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:100vh;align-items:center;}
+    .brand-panel{padding:48px;display:flex;flex-direction:column;gap:32px;animation:slideLeft 0.8s cubic-bezier(0.22,1,0.36,1) both;}
+    @keyframes slideLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+    .logo-mark{display:flex;align-items:center;gap:12px;}
+    .logo-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 24px rgba(79,142,247,0.35);}
+    .logo-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .hero-text h1{font-family:'Playfair Display',serif;font-size:clamp(36px,4vw,52px);font-weight:900;line-height:1.1;letter-spacing:-1px;}
+    .hero-text h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .hero-text p{margin-top:16px;font-size:15px;color:var(--muted);line-height:1.7;max-width:320px;}
+    .stats-row{display:flex;gap:24px;}
+    .stat-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;flex:1;}
+    .stat-box .num{font-size:24px;font-weight:700;color:var(--accent);}
+    .stat-box .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+    .auth-panel{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:48px 44px;animation:slideRight 0.8s 0.1s cubic-bezier(0.22,1,0.36,1) both;box-shadow:0 32px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(79,142,247,0.06);}
+    @keyframes slideRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+    .tab-row{display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:36px;}
+    .tab-btn{flex:1;padding:10px;border:none;border-radius:9px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.3px;transition:all 0.3s ease;background:transparent;color:var(--muted);}
+    .tab-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 12px rgba(79,142,247,0.3);}
+    .form-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:6px;}
+    .form-subtitle{font-size:13px;color:var(--muted);margin-bottom:28px;}
+    .form-panel{display:none;}
+    .form-panel.active{display:block;animation:fadeUp 0.4s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .input-group{margin-bottom:18px;}
+    .input-group label{display:block;font-size:12px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .input-wrap{position:relative;}
+    .input-wrap .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted);pointer-events:none;}
+    .input-group input,.input-group select{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px 12px 40px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;}
+    .input-group input:focus,.input-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,0.15);}
+    .input-group select option{background:var(--surface);}
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;transition:all 0.25s ease;box-shadow:0 4px 16px rgba(79,142,247,0.3);letter-spacing:0.3px;}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(79,142,247,0.45);}
+    .btn-primary:active{transform:translateY(0);}
+    .alert{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;align-items:center;gap:8px;}
+    .alert.success{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:var(--success);display:flex;}
+    .alert.error{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:var(--danger);display:flex;}
+    .remember-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    .check-label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;}
+    .check-label input[type="checkbox"]{accent-color:var(--accent);}
+    .forgot-link{font-size:13px;color:var(--accent);text-decoration:none;font-weight:500;cursor:pointer;}
+    .forgot-link:hover{text-decoration:underline;}
+    .nav-link-row{text-align:center;margin-top:20px;font-size:13px;color:var(--muted);}
+    .nav-link-row a{color:var(--accent);font-weight:600;text-decoration:none;cursor:pointer;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;}
+    .modal-overlay.show{display:flex;}
+    .modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;width:90%;max-width:420px;text-align:center;animation:popIn 0.35s cubic-bezier(0.22,1,0.36,1);}
+    @keyframes popIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+    .modal-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--success),#34d399);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;box-shadow:0 8px 24px rgba(16,185,129,0.35);}
+    .modal-box h3{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;}
+    .modal-box p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px;}
+    .btn-modal{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-modal:hover{opacity:0.9;transform:translateY(-1px);}
+    .forgot-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px 12px 40px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .forgot-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,0.15);}
+    @media(max-width:768px){.page-wrapper{grid-template-columns:1fr;}.brand-panel{display:none;}.auth-panel{padding:32px 24px;}}
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+  <div class="brand-panel">
+    <div class="logo-mark"><div class="logo-icon">🎓</div><span class="logo-name">EduTrack</span></div>
+    <div class="hero-text">
+      <h1>Smart <span>Attendance</span> for Modern Schools</h1>
+      <p>Effortlessly track, manage, and report student attendance with a powerful admin dashboard built for educators.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="num">98%</div><div class="lbl">Accuracy</div></div>
+      <div class="stat-box"><div class="num">500+</div><div class="lbl">Students</div></div>
+      <div class="stat-box"><div class="num">Real-time</div><div class="lbl">Reports</div></div>
+    </div>
+  </div>
+  <div class="auth-panel">
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="loginPanel" class="form-panel active">
+      <div class="form-title">Welcome back 👋</div>
+      <div class="form-subtitle">Sign in to your account</div>
+      <div id="loginAlert" class="alert"></div>
+      <div class="input-group">
+        <label>Login As</label>
+        <div class="input-wrap">
+          <span class="icon">🎭</span>
+          <select id="loginRole" onchange="handleRoleChange()">
+            <option value="">Select your role</option>
+            <option>Student</option>
+            <option>Teacher</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Email Address</label>
+        <div class="input-wrap"><span class="icon">✉️</span><input type="email" id="loginEmail" placeholder="your@email.com"/></div>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <div class="input-wrap"><span class="icon">🔒</span><input type="password" id="loginPassword" placeholder="Enter your password"/></div>
+      </div>
+      <div class="remember-row">
+        <label class="check-label"><input type="checkbox"/> Remember me</label>
+        <a class="forgot-link" onclick="openForgotModal()">Forgot password?</a>
+      </div>
+      <button class="btn-primary" onclick="handleLogin()">Sign In to Dashboard →</button>
+      <div id="registerLinkRow" class="nav-link-row">Don't have an account? <a onclick="switchTab('register')">Register here</a></div>
+    </div>
+    <div id="registerPanel" class="form-panel">
+      <div class="form-title">Create Account</div>
+      <div class="form-subtitle">Register a new teacher account</div>
+      <div id="regAlert" class="alert"></div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>First Name</label>
+          <div class="input-wrap"><span class="icon">👤</span><input type="text" id="regFirst" placeholder="Juan"/></div>
+        </div>
+        <div class="input-group">
+          <label>Last Name</label>
+          <div class="input-wrap"><span class="icon">👤</span><input type="text" id="regLast" placeholder="Dela Cruz"/></div>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Email Address</label>
+        <div class="input-wrap"><span class="icon">✉️</span><input type="email" id="regEmail" placeholder="teacher@school.edu"/></div>
+      </div>
+      <div class="input-group" style="display:none;"><select id="regRole"><option value="Teacher" selected>Teacher</option></select></div>
+      <div class="row-2">
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrap"><span class="icon">🔒</span><input type="password" id="regPass" placeholder="••••••••"/></div>
+        </div>
+        <div class="input-group">
+          <label>Confirm</label>
+          <div class="input-wrap"><span class="icon">🔒</span><input type="password" id="regConfirm" placeholder="••••••••"/></div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="handleRegister()">Create Teacher Account →</button>
+      <div class="nav-link-row">Already have an account? <a onclick="switchTab('login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-box">
+    <div class="modal-icon" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">🔑</div>
+    <h3>Forgot Password?</h3>
+    <p>Enter your registered email address and we'll show you your password.</p>
+    <div id="forgotAlert" class="alert"></div>
+    <div style="text-align:left;margin-bottom:20px;">
+      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px;">Email Address</label>
+      <div style="position:relative;">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;color:var(--muted);">✉️</span>
+        <input type="email" id="forgotEmail" class="forgot-input" placeholder="your@email.com"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-modal" style="flex:1;background:var(--surface);color:var(--muted);border:1px solid var(--border);" onclick="closeForgotModal()">Cancel</button>
+      <button class="btn-modal" style="flex:1;" onclick="retrievePassword()">Retrieve Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal-box">
+    <div class="modal-icon">✓</div>
+    <h3 id="modalTitle">Account Created!</h3>
+    <p id="modalMsg">Your account has been successfully registered.</p>
+    <button class="btn-modal" onclick="closeModal()">Continue →</button>
+  </div>
+</div>
+
+<script>
+  function getAdmins(){return JSON.parse(localStorage.getItem('edutrack_admins')||'[]');}
+  function saveAdmin(a){const admins=getAdmins();admins.push(a);localStorage.setItem('edutrack_admins',JSON.stringify(admins));}
+  function saveAdmins(a){localStorage.setItem('edutrack_admins',JSON.stringify(a));}
+
+  function switchTab(tab){
+    document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',(tab==='login'&&i===0)||(tab==='register'&&i===1));});
+    document.getElementById('loginPanel').classList.toggle('active',tab==='login');
+    document.getElementById('registerPanel').classList.toggle('active',tab==='register');
+    clearAlerts();
+  }
+
+  function showAlert(id,type,msg){const el=document.getElementById(id);el.className=`alert ${type}`;el.innerHTML=(type==='success'?'✅':'❌')+' '+msg;}
+  function clearAlerts(){document.querySelectorAll('.alert').forEach(a=>a.className='alert');}
+
+  function handleRoleChange(){
+    const role=document.getElementById('loginRole').value;
+    document.getElementById('registerLinkRow').style.display=role==='Student'?'none':'block';
+  }
+
+  function handleLogin(){
+    const role=document.getElementById('loginRole').value;
+    const email=document.getElementById('loginEmail').value.trim();
+    const pass=document.getElementById('loginPassword').value;
+    if(!role){showAlert('loginAlert','error','Please select your role.');return;}
+    if(!email||!pass){showAlert('loginAlert','error','Please fill in all fields.');return;}
+    const found=getAdmins().find(a=>a.email===email&&a.password===pass&&a.role===role);
+    if(found){
+      localStorage.setItem('edutrack_current_user',JSON.stringify(found));
+      showAlert('loginAlert','success',`Welcome back, ${found.firstName}! Redirecting...`);
+      setTimeout(()=>{window.location.href=found.role==='Student'?'student-dashboard.html':'lab3-attendance.html';},1200);
+    } else {
+      showAlert('loginAlert','error','Invalid credentials or wrong role selected. Please try again.');
+    }
+  }
+
+  function handleRegister(){
+    const firstName=document.getElementById('regFirst').value.trim();
+    const lastName=document.getElementById('regLast').value.trim();
+    const email=document.getElementById('regEmail').value.trim();
+    const role=document.getElementById('regRole').value;
+    const pass=document.getElementById('regPass').value;
+    const confirm=document.getElementById('regConfirm').value;
+    if(!firstName||!lastName||!email||!pass||!confirm){showAlert('regAlert','error','Please fill in all fields.');return;}
+    if(!/\S+@\S+\.\S+/.test(email)){showAlert('regAlert','error','Please enter a valid email address.');return;}
+    if(pass.length<6){showAlert('regAlert','error','Password must be at least 6 characters.');return;}
+    if(pass!==confirm){showAlert('regAlert','error','Passwords do not match.');return;}
+    const admins=getAdmins();
+    if(admins.find(a=>a.email===email)){showAlert('regAlert','error','This email is already registered.');return;}
+    saveAdmin({firstName,lastName,email,role,password:pass});
+    document.getElementById('modalTitle').textContent='Account Created! 🎉';
+    document.getElementById('modalMsg').textContent=`Welcome, ${firstName}! Your Teacher account has been registered. You can now sign in.`;
+    document.getElementById('successModal').classList.add('show');
+  }
+
+  function closeModal(){document.getElementById('successModal').classList.remove('show');switchTab('login');}
+
+  function openForgotModal(){
+    document.getElementById('forgotModal').classList.add('show');
+    document.getElementById('forgotAlert').className='alert';
+    document.getElementById('forgotEmail').value='';
+  }
+
+  function closeForgotModal(){document.getElementById('forgotModal').classList.remove('show');}
+
+  function retrievePassword(){
+    const email=document.getElementById('forgotEmail').value.trim();
+    const alertEl=document.getElementById('forgotAlert');
+    if(!email){alertEl.className='alert error';alertEl.innerHTML='❌ Please enter your email address.';return;}
+    const found=getAdmins().find(a=>a.email===email);
+    if(!found){alertEl.className='alert error';alertEl.innerHTML='❌ No account found with that email.';return;}
+    alertEl.className='alert success';
+    alertEl.innerHTML=`✅ Your password is: <strong style="font-size:15px;letter-spacing:1px;">${found.password}</strong>`;
+  }
+
+  if(getAdmins().length===0){
+    saveAdmin({firstName:'Demo',lastName:'Teacher',email:'teacher@school.edu',role:'Teacher',password:'teacher123'});
+  }
+</script>
+</body>
+</html>
