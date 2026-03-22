@@ -127,70 +127,109 @@
   <div class="nav-btn active"><div class="nav-icon-wrap"><div class="nav-icon">📊</div></div><span>Dashboard</span></div>
   <div class="nav-btn" onclick="logout()"><div class="nav-icon-wrap"><div class="nav-icon">🚪</div></div><span>Sign Out</span></div>
 </div>
-<script>
-  function getStudents(){return JSON.parse(localStorage.getItem('edutrack_students')||'[]');}
-  function getAttendanceData(){return JSON.parse(localStorage.getItem('edutrack_attendance')||'{}');}
 
-  window.onload=function(){
-    const user=JSON.parse(localStorage.getItem('edutrack_current_user')||'null');
-    if(!user){window.location.href='index.html';return;}
-    if(user.role!=='Student'){window.location.href='lab3-attendance.html';return;}
-    document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    document.getElementById('profileAvatar').textContent=user.firstName[0].toUpperCase();
-    document.getElementById('profileName').textContent=user.firstName+' '+(user.lastName||'');
-    document.getElementById('profileEmail').textContent=user.email;
-    loadDashboard(user);
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHidY4u5a0xTktf0gswedhs9Np8Zk5600",
+    authDomain: "edutrack-6dd6e.firebaseapp.com",
+    projectId: "edutrack-6dd6e",
+    storageBucket: "edutrack-6dd6e.firebasestorage.app",
+    messagingSenderId: "567142987996",
+    appId: "1:567142987996:web:518dae5a2f23fff569dc19"
   };
 
-  function loadDashboard(user){
-    const students=getStudents();
-    const all=getAttendanceData();
-    const me=students.find(s=>s.email===user.email);
-    document.getElementById('profileStudentId').textContent=me?'ID: '+me.id:'ID: Not found';
-    document.getElementById('kpiTotal').textContent=students.length;
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const user = JSON.parse(sessionStorage.getItem('edutrack_current_user')||'null');
+  if(!user){ window.location.href='index.html'; }
+  else if(user.role!=='Student'){ window.location.href='lab3-attendance.html'; }
+
+  document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('profileAvatar').textContent = user.firstName[0].toUpperCase();
+  document.getElementById('profileName').textContent = user.firstName+' '+(user.lastName||'');
+  document.getElementById('profileEmail').textContent = user.email;
+
+  let myStudentData = null;
+  let allStudents = [];
+  let allAttendance = {};
+
+  async function init(){
+    // Load all students
+    const snap = await getDocs(collection(db,'students'));
+    allStudents = [];
+    snap.forEach(d => {
+      const data = d.data();
+      allStudents.push(data);
+      if(data.email === user.email) myStudentData = data;
+    });
+    document.getElementById('profileStudentId').textContent = myStudentData ? 'ID: '+myStudentData.id : 'ID: Not found';
+    document.getElementById('kpiTotal').textContent = allStudents.length;
+
+    // Load all attendance
+    const attSnap = await getDocs(collection(db,'attendance'));
+    allAttendance = {};
+    attSnap.forEach(d => allAttendance[d.id] = d.data());
+
+    renderDashboard();
+
+    // Real-time listener — when teacher saves attendance it updates here instantly
+    const attCollection = collection(db,'attendance');
+    onSnapshot(attCollection, (snap) => {
+      snap.docChanges().forEach(change => {
+        allAttendance[change.doc.id] = change.doc.data();
+      });
+      renderDashboard();
+    });
+  }
+
+  function renderDashboard(){
     let totalPresent=0,totalAbsent=0,totalLate=0;
     let rows='';
-    Object.keys(all).sort().reverse().forEach(date=>{
-      const dayData=all[date];
-      if(!me||!dayData[me.id])return;
-      const st=dayData[me.id];
-      const time=dayData[me.id+'_time']||'—';
-      if(st==='Present')totalPresent++;
-      else if(st==='Absent')totalAbsent++;
-      else if(st==='Late')totalLate++;
-      const d=new Date(date+'T00:00:00');
-      const pillClass=st==='Present'?'pill-p':st==='Absent'?'pill-a':'pill-l';
-      rows+=`<div class="history-row">
+
+    const sortedDates = Object.keys(allAttendance).sort().reverse();
+    sortedDates.forEach(date => {
+      const dayData = allAttendance[date];
+      if(!myStudentData || !dayData[myStudentData.id]) return;
+      const st = dayData[myStudentData.id];
+      const time = dayData[myStudentData.id+'_time']||'—';
+      if(st==='Present') totalPresent++;
+      else if(st==='Absent') totalAbsent++;
+      else if(st==='Late') totalLate++;
+      const d = new Date(date+'T00:00:00');
+      const pillClass = st==='Present'?'pill-p':st==='Absent'?'pill-a':'pill-l';
+      rows += `<div class="history-row">
         <div class="history-date-box"><div class="day-num">${d.getDate()}</div><div class="month">${d.toLocaleDateString('en-PH',{month:'short'})}</div></div>
         <div class="history-info"><div class="weekday">${d.toLocaleDateString('en-PH',{weekday:'long'})}</div><div class="year">${d.getFullYear()}</div></div>
         <div class="history-right"><span class="status-pill ${pillClass}">● ${st}</span><span class="time-label">${time}</span></div>
       </div>`;
     });
-    document.getElementById('kpiPresent').textContent=totalPresent;
-    document.getElementById('kpiAbsent').textContent=totalAbsent;
-    document.getElementById('kpiLate').textContent=totalLate;
-    const totalRecords=totalPresent+totalAbsent+totalLate;
-    document.getElementById('historyCount').textContent=`${totalRecords} record${totalRecords!==1?'s':''}`;
-    const rate=totalRecords>0?Math.round(((totalPresent+totalLate)/totalRecords)*100):0;
-    const ringColor=rate>=80?'var(--present)':rate>=60?'var(--late)':'var(--absent)';
-    document.getElementById('rateVal').textContent=rate+'%';
-    document.getElementById('rateVal').style.color=ringColor;
-    document.getElementById('rateRingText').textContent=rate+'%';
-    document.getElementById('rateRingText').style.color=ringColor;
-    document.getElementById('rateSub').textContent=totalRecords>0?`Based on ${totalRecords} recorded day${totalRecords!==1?'s':''}`:'No records yet';
-    document.getElementById('rateCircle').style.strokeDashoffset=163.36-(rate/100)*163.36;
-    document.getElementById('rateCircle').style.stroke=ringColor;
-    document.getElementById('historyList').innerHTML=rows||`<div class="empty-state"><div class="empty-icon">📭</div><p>No attendance records yet.<br/>Your records will appear here once your teacher marks your attendance.</p></div>`;
+
+    document.getElementById('kpiPresent').textContent = totalPresent;
+    document.getElementById('kpiAbsent').textContent = totalAbsent;
+    document.getElementById('kpiLate').textContent = totalLate;
+
+    const totalRecords = totalPresent+totalAbsent+totalLate;
+    document.getElementById('historyCount').textContent = `${totalRecords} record${totalRecords!==1?'s':''}`;
+
+    const rate = totalRecords>0?Math.round(((totalPresent+totalLate)/totalRecords)*100):0;
+    const ringColor = rate>=80?'var(--present)':rate>=60?'var(--late)':'var(--absent)';
+    document.getElementById('rateVal').textContent = rate+'%';
+    document.getElementById('rateVal').style.color = ringColor;
+    document.getElementById('rateRingText').textContent = rate+'%';
+    document.getElementById('rateRingText').style.color = ringColor;
+    document.getElementById('rateSub').textContent = totalRecords>0?`Based on ${totalRecords} recorded day${totalRecords!==1?'s':''}`:'No records yet';
+    document.getElementById('rateCircle').style.strokeDashoffset = 163.36-(rate/100)*163.36;
+    document.getElementById('rateCircle').style.stroke = ringColor;
+    document.getElementById('historyList').innerHTML = rows || `<div class="empty-state"><div class="empty-icon">📭</div><p>No attendance records yet.<br/>Your records will appear here once your teacher marks your attendance.</p></div>`;
   }
 
-  function logout(){localStorage.removeItem('edutrack_current_user');window.location.href='index.html';}
+  window.logout = function(){ sessionStorage.removeItem('edutrack_current_user');window.location.href='index.html'; };
 
-  window.addEventListener('storage',function(e){
-    if(e.key==='edutrack_attendance'){
-      const user=JSON.parse(localStorage.getItem('edutrack_current_user')||'null');
-      if(user)loadDashboard(user);
-    }
-  });
+  init();
 </script>
 </body>
 </html>
