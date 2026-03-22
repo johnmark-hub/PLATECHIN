@@ -261,8 +261,7 @@
         showAlert('loginAlert','error','Wrong role selected for this account.');
         return;
       }
-      sessionStorage.setItem('edutrack_current_user', JSON.stringify(userData));
-      hideLoading();
+localStorage.setItem('edutrack_current_user', JSON.stringify(userData));      hideLoading();
       showAlert('loginAlert','success',`Welcome back, ${userData.firstName}! Redirecting...`);
       setTimeout(()=>{
         window.location.href = userData.role==='Student' ? 'student-dashboard.html' : 'lab3-attendance.html';
