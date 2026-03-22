@@ -6,7 +6,7 @@
   <title>EduTrack – Student</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    :root{--bg:#0a0f1e;--surface:#111827;--card:#161f35;--border:#1e2d4a;--accent:#4f8ef7;--accent2:#7c5cfc;--text:#e8edf5;--muted:#6b7a99;--present:#10b981;--absent:#ef4444;--late:#f59e0b;--present-bg:rgba(16,185,129,0.1);--absent-bg:rgba(239,68,68,0.1);--late-bg:rgba(245,158,11,0.1);}
+    :root{--bg:#0a0f1e;--surface:#111827;--card:#161f35;--border:#1e2d4a;--accent:#4f8ef7;--accent2:#7c5cfc;--text:#e8edf5;--muted:#6b7a99;--present:#10b981;--absent:#ef4444;--late:#f59e0b;--success:#10b981;--present-bg:rgba(16,185,129,0.1);--absent-bg:rgba(239,68,68,0.1);--late-bg:rgba(245,158,11,0.1);}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;max-width:430px;margin:0 auto;position:relative;overflow:hidden;display:flex;flex-direction:column;}
     body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(79,142,247,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(124,92,252,0.10) 0%,transparent 60%);pointer-events:none;z-index:0;}
@@ -18,13 +18,15 @@
     .logout-icon-btn:active{background:var(--absent-bg);color:var(--absent);border-color:var(--absent);}
     .scroll-content{position:relative;z-index:1;padding:20px 16px 24px;overflow-y:auto;flex:1;scrollbar-width:none;-ms-overflow-style:none;}
     .scroll-content::-webkit-scrollbar{display:none;}
-    .profile-card{background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(124,92,252,0.15));border:1px solid rgba(79,142,247,0.25);border-radius:20px;padding:22px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;}
+    .profile-card{background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(124,92,252,0.15));border:1px solid rgba(79,142,247,0.25);border-radius:20px;padding:22px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;}
     .profile-card::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(79,142,247,0.15),transparent);border-radius:50%;}
     .profile-avatar{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 6px 20px rgba(79,142,247,0.35);}
     .profile-info .greeting{font-size:12px;color:var(--muted);margin-bottom:4px;}
     .profile-info .name{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;line-height:1.2;}
     .profile-info .email{font-size:12px;color:var(--muted);margin-top:4px;}
     .student-badge{position:absolute;top:16px;right:16px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);border-radius:100px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;}
+    .change-pw-btn{width:100%;margin-bottom:16px;padding:11px;background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:12px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;}
+    .change-pw-btn:active{background:rgba(79,142,247,0.15);}
     .date-chip{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:20px;}
     .date-chip span{color:var(--text);}
     .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;}
@@ -49,6 +51,14 @@
     .rate-ring{width:64px;height:64px;position:relative;}
     .rate-ring svg{transform:rotate(-90deg);}
     .rate-ring-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+    .ann-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px;}
+    .ann-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .ann-header h3{font-size:14px;font-weight:700;}
+    .ann-badge{font-size:11px;color:var(--muted);background:var(--surface);border-radius:100px;padding:3px 10px;}
+    .ann-row{padding:14px 18px;border-bottom:1px solid rgba(30,45,74,0.4);}
+    .ann-row:last-child{border-bottom:none;}
+    .ann-meta{font-size:11px;color:var(--accent);font-weight:600;margin-bottom:5px;}
+    .ann-msg{font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;}
     .history-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
     .history-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
     .history-header h3{font-size:14px;font-weight:700;}
@@ -68,23 +78,37 @@
     .pill-a{background:var(--absent-bg);color:var(--absent);border:1px solid rgba(239,68,68,0.2);}
     .pill-l{background:var(--late-bg);color:var(--late);border:1px solid rgba(245,158,11,0.2);}
     .time-label{font-size:11px;color:var(--muted);}
-    .empty-state{padding:48px 20px;text-align:center;color:var(--muted);}
-    .empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.5;}
-    .empty-state p{font-size:14px;line-height:1.6;}
+    .empty-state{padding:32px 20px;text-align:center;color:var(--muted);}
+    .empty-state .empty-icon{font-size:36px;margin-bottom:8px;opacity:0.5;}
+    .empty-state p{font-size:13px;line-height:1.6;}
     .bottom-nav{position:sticky;bottom:0;width:100%;max-width:430px;background:rgba(22,31,53,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding:10px 0 20px;z-index:100;flex-shrink:0;}
     .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;transition:all 0.2s;}
     .nav-btn .nav-icon{font-size:22px;}
     .nav-btn.active{color:var(--accent);}
     .nav-btn.active .nav-icon-wrap{background:rgba(79,142,247,0.12);border-radius:12px;padding:6px 14px;}
     .nav-icon-wrap{padding:6px 14px;}
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+    .modal-overlay.show{display:flex;}
+    .modal-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;width:100%;max-width:360px;animation:popIn 0.3s cubic-bezier(0.22,1,0.36,1);}
+    @keyframes popIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
+    .pw-input-wrap{position:relative;margin-bottom:14px;}
+    .pw-input-wrap label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px;}
+    .pw-input-wrap .icon{position:absolute;left:14px;bottom:12px;font-size:15px;pointer-events:none;color:var(--muted);}
+    .pw-input-wrap input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px 11px 40px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .pw-input-wrap input:focus{border-color:var(--accent);}
   </style>
 </head>
 <body>
+
 <div class="topbar">
   <div class="topbar-left"><div class="app-logo">🎓</div><span class="app-name">EduTrack</span></div>
   <button class="logout-icon-btn" onclick="logout()" title="Sign Out">🚪</button>
 </div>
+
 <div class="scroll-content">
+
+  <!-- PROFILE -->
   <div class="profile-card">
     <div class="profile-avatar" id="profileAvatar">S</div>
     <div class="profile-info">
@@ -95,17 +119,23 @@
     </div>
     <div class="student-badge">Student</div>
   </div>
-<!-- CHANGE PASSWORD BUTTON -->
-  <button onclick="openChangePasswordModal()" style="width:100%;margin-bottom:16px;padding:12px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.25);border-radius:12px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">🔑 Change Password</button>
+
+  <!-- CHANGE PASSWORD BUTTON -->
+  <button class="change-pw-btn" onclick="openChangePw()">🔑 Change Password</button>
 
   <!-- DATE -->
-  <div class="date-chip">📅 <span id="todayLabel">—</span></div>  <div class="section-title">Overview</div>
+  <div class="date-chip">📅 <span id="todayLabel">—</span></div>
+
+  <!-- KPI -->
+  <div class="section-title">Overview</div>
   <div class="kpi-grid">
     <div class="kpi-card total"><div class="kpi-icon">👥</div><div class="kpi-val" id="kpiTotal">0</div><div class="kpi-label">Total Students</div></div>
     <div class="kpi-card present"><div class="kpi-icon">✅</div><div class="kpi-val" id="kpiPresent">0</div><div class="kpi-label">Present</div></div>
     <div class="kpi-card absent"><div class="kpi-icon">❌</div><div class="kpi-val" id="kpiAbsent">0</div><div class="kpi-label">Absent</div></div>
     <div class="kpi-card late"><div class="kpi-icon">⏰</div><div class="kpi-val" id="kpiLate">0</div><div class="kpi-label">Late</div></div>
   </div>
+
+  <!-- RATE -->
   <div class="rate-card">
     <div class="rate-info">
       <div class="rate-label">My Attendance Rate</div>
@@ -120,20 +150,66 @@
       <div class="rate-ring-text" id="rateRingText">0%</div>
     </div>
   </div>
+
+  <!-- ANNOUNCEMENTS -->
+  <div class="section-title">Announcements</div>
+  <div class="ann-card">
+    <div class="ann-header">
+      <h3>📢 Class Announcements</h3>
+      <span class="ann-badge" id="annCount">0</span>
+    </div>
+    <div id="announcementsList"></div>
+  </div>
+
+  <!-- HISTORY -->
   <div class="section-title">Attendance History</div>
   <div class="history-card">
     <div class="history-header"><h3>📋 My Records</h3><span class="history-count" id="historyCount">0 records</span></div>
     <div id="historyList"></div>
   </div>
+
 </div>
+
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <div class="nav-btn active"><div class="nav-icon-wrap"><div class="nav-icon">📊</div></div><span>Dashboard</span></div>
   <div class="nav-btn" onclick="logout()"><div class="nav-icon-wrap"><div class="nav-icon">🚪</div></div><span>Sign Out</span></div>
 </div>
 
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="changePwModal">
+  <div class="modal-card">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px;">🔑</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:19px;margin-bottom:4px;">Change Password</h3>
+      <p style="color:var(--muted);font-size:12px;">Update your account password</p>
+    </div>
+    <div id="changePwAlert" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;"></div>
+    <div class="pw-input-wrap">
+      <label>Current Password</label>
+      <span class="icon">🔒</span>
+      <input type="password" id="currentPw" placeholder="Enter current password"/>
+    </div>
+    <div class="pw-input-wrap">
+      <label>New Password</label>
+      <span class="icon">🔑</span>
+      <input type="password" id="newPw" placeholder="Min. 6 characters"/>
+    </div>
+    <div class="pw-input-wrap">
+      <label>Confirm New Password</label>
+      <span class="icon">🔑</span>
+      <input type="password" id="confirmPw" placeholder="Repeat new password"/>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button onclick="closeChangePw()" style="flex:1;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
+      <button onclick="changePassword()" style="flex:1;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Update</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, getDocs, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAHidY4u5a0xTktf0gswedhs9Np8Zk5600",
@@ -161,7 +237,6 @@
   let allAttendance = {};
 
   async function init(){
-    // Load all students
     const snap = await getDocs(collection(db,'students'));
     allStudents = [];
     snap.forEach(d => {
@@ -172,27 +247,41 @@
     document.getElementById('profileStudentId').textContent = myStudentData ? 'ID: '+myStudentData.id : 'ID: Not found';
     document.getElementById('kpiTotal').textContent = allStudents.length;
 
-    // Load all attendance
     const attSnap = await getDocs(collection(db,'attendance'));
     allAttendance = {};
     attSnap.forEach(d => allAttendance[d.id] = d.data());
 
     renderDashboard();
 
-    // Real-time listener — when teacher saves attendance it updates here instantly
-    const attCollection = collection(db,'attendance');
-    onSnapshot(attCollection, (snap) => {
-      snap.docChanges().forEach(change => {
-        allAttendance[change.doc.id] = change.doc.data();
-      });
+    // Real-time attendance listener
+    onSnapshot(collection(db,'attendance'), (snap) => {
+      snap.forEach(d => { allAttendance[d.id] = d.data(); });
       renderDashboard();
+    });
+
+    // Real-time announcements listener
+    const annQ = query(collection(db,'announcements'), orderBy('createdAt','desc'));
+    onSnapshot(annQ, (snap) => {
+      document.getElementById('annCount').textContent = snap.size;
+      const list = document.getElementById('announcementsList');
+      if(snap.empty){
+        list.innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><p>No announcements yet.</p></div>`;
+        return;
+      }
+      list.innerHTML = snap.docs.map(d => {
+        const data = d.data();
+        const date = data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+        return `<div class="ann-row">
+          <div class="ann-meta">📢 ${data.postedBy||'Teacher'} &nbsp;·&nbsp; ${date}</div>
+          <div class="ann-msg">${data.message}</div>
+        </div>`;
+      }).join('');
     });
   }
 
   function renderDashboard(){
     let totalPresent=0,totalAbsent=0,totalLate=0;
     let rows='';
-
     const sortedDates = Object.keys(allAttendance).sort().reverse();
     sortedDates.forEach(date => {
       const dayData = allAttendance[date];
@@ -230,92 +319,52 @@
     document.getElementById('historyList').innerHTML = rows || `<div class="empty-state"><div class="empty-icon">📭</div><p>No attendance records yet.<br/>Your records will appear here once your teacher marks your attendance.</p></div>`;
   }
 
-  window.logout = function(){ sessionStorage.removeItem('edutrack_current_user');window.location.href='index.html'; };
-
-  init();
-  window.openChangePasswordModal = function(){
-    document.getElementById('changePwModal').style.display='flex';
+  // ---- CHANGE PASSWORD ----
+  window.openChangePw = function(){
+    document.getElementById('changePwModal').classList.add('show');
     document.getElementById('changePwAlert').style.display='none';
     document.getElementById('currentPw').value='';
     document.getElementById('newPw').value='';
     document.getElementById('confirmPw').value='';
   };
 
-  window.closeChangePasswordModal = function(){
-    document.getElementById('changePwModal').style.display='none';
+  window.closeChangePw = function(){
+    document.getElementById('changePwModal').classList.remove('show');
   };
+
+  function showPwAlert(type, msg){
+    const el = document.getElementById('changePwAlert');
+    el.style.display='block';
+    el.style.background = type==='error'?'rgba(239,68,68,0.12)':'rgba(16,185,129,0.12)';
+    el.style.border = type==='error'?'1px solid rgba(239,68,68,0.3)':'1px solid rgba(16,185,129,0.3)';
+    el.style.color = type==='error'?'var(--absent)':'var(--success)';
+    el.innerHTML = (type==='error'?'❌ ':'✅ ') + msg;
+  }
 
   window.changePassword = async function(){
     const currentPw = document.getElementById('currentPw').value;
     const newPw = document.getElementById('newPw').value;
     const confirmPw = document.getElementById('confirmPw').value;
-    const alertEl = document.getElementById('changePwAlert');
+    if(!currentPw||!newPw||!confirmPw){ showPwAlert('error','Please fill in all fields.'); return; }
+    if(newPw.length<6){ showPwAlert('error','New password must be at least 6 characters.'); return; }
+    if(newPw!==confirmPw){ showPwAlert('error','New passwords do not match.'); return; }
 
-    function showPwAlert(type, msg){
-      alertEl.style.display='block';
-      alertEl.style.background = type==='error'?'rgba(239,68,68,0.12)':'rgba(16,185,129,0.12)';
-      alertEl.style.border = type==='error'?'1px solid rgba(239,68,68,0.3)':'1px solid rgba(16,185,129,0.3)';
-      alertEl.style.color = type==='error'?'var(--absent)':'var(--success)';
-      alertEl.innerHTML = (type==='error'?'❌ ':'✅ ') + msg;
-    }
-
-    if(!currentPw||!newPw||!confirmPw){showPwAlert('error','Please fill in all fields.');return;}
-    if(newPw.length<6){showPwAlert('error','New password must be at least 6 characters.');return;}
-    if(newPw!==confirmPw){showPwAlert('error','New passwords do not match.');return;}
-
-    // Verify current password against Firestore
     const userDoc = await getDoc(doc(db,'users', user.email));
     if(!userDoc.exists()||userDoc.data().password!==currentPw){
-      showPwAlert('error','Current password is incorrect.');return;
+      showPwAlert('error','Current password is incorrect.'); return;
     }
 
-    // Update password in Firestore
-    const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    await setDoc(doc(db,'users', user.email),{...userDoc.data(), password: newPw});
-
-    // Update session
-    const updatedUser = {...user, password: newPw};
-    sessionStorage.setItem('edutrack_current_user', JSON.stringify(updatedUser));
+    const updated = {...userDoc.data(), password: newPw};
+    await setDoc(doc(db,'users', user.email), updated);
+    sessionStorage.setItem('edutrack_current_user', JSON.stringify({...user, password: newPw}));
 
     showPwAlert('success','Password updated successfully!');
-    setTimeout(()=>closeChangePasswordModal(), 1500);
+    setTimeout(()=>closeChangePw(), 1500);
   };
+
+  window.logout = function(){ sessionStorage.removeItem('edutrack_current_user');window.location.href='index.html'; };
+
+  init();
 </script>
-<!-- CHANGE PASSWORD MODAL -->
-<div id="changePwModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px 28px;width:90%;max-width:380px;animation:popIn 0.3s cubic-bezier(0.22,1,0.36,1);">
-    <div style="text-align:center;margin-bottom:20px;">
-      <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px;">🔑</div>
-      <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px;">Change Password</h3>
-      <p style="color:var(--muted);font-size:13px;">Enter your current password and a new one</p>
-    </div>
-    <div id="changePwAlert" style="padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;"></div>
-    <div style="margin-bottom:14px;">
-      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px;">Current Password</label>
-      <div style="position:relative;">
-        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;color:var(--muted);">🔒</span>
-        <input type="password" id="currentPw" placeholder="Enter current password" style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px 11px 40px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;"/>
-      </div>
-    </div>
-    <div style="margin-bottom:14px;">
-      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px;">New Password</label>
-      <div style="position:relative;">
-        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;color:var(--muted);">🔑</span>
-        <input type="password" id="newPw" placeholder="Min. 6 characters" style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px 11px 40px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;"/>
-      </div>
-    </div>
-    <div style="margin-bottom:20px;">
-      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px;">Confirm New Password</label>
-      <div style="position:relative;">
-        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;color:var(--muted);">🔑</span>
-        <input type="password" id="confirmPw" placeholder="Repeat new password" style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px 11px 40px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;"/>
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button onclick="closeChangePasswordModal()" style="flex:1;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
-      <button onclick="changePassword()" style="flex:1;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Update Password</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
