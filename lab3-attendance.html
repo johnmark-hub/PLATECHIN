@@ -127,6 +127,11 @@
     .toast.absent{border-left:3px solid var(--absent);}
     .toast.late{border-left:3px solid var(--late);}
     .toast.info{border-left:3px solid var(--accent);}
+    .ann-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;}
+    .ann-meta{font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;}
+    .ann-msg{font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;}
+    .ann-delete{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px;}
+    .ann-delete:hover{color:var(--absent);}
     @media(max-width:900px){.sidebar{width:64px;}.sidebar .logo-name,.sidebar .nav-item span,.sidebar-footer .user-info,.sidebar .nav-section,.logout-btn{display:none;}.main{margin-left:64px;}.summary-row{grid-template-columns:repeat(2,1fr);}}
   </style>
 </head>
@@ -139,6 +144,7 @@
     <a href="lab4-reports.html" class="nav-item">📊 <span>Reports</span></a>
     <div class="nav-section">Admin</div>
     <a href="#" class="nav-item" onclick="openAddStudent()">➕ <span>Add Student</span></a>
+    <a href="#" class="nav-item" onclick="openAnnouncements()">📢 <span>Announcements</span></a>
     <a href="index.html" class="nav-item">⚙️ <span>Settings</span></a>
   </div>
   <div class="sidebar-footer">
@@ -211,6 +217,23 @@
     </table>
   </div>
 </main>
+
+<!-- ANNOUNCEMENTS MODAL -->
+<div class="modal-overlay" id="announcementsModal">
+  <div class="modal-box" style="max-width:540px;">
+    <div class="modal-top">
+      <h3>📢 Class Announcements</h3>
+      <button class="close-btn" onclick="closeAnnouncements()">✕</button>
+    </div>
+    <div style="margin-bottom:20px;">
+      <textarea id="announcementText" placeholder="Write an announcement for your students..." style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;resize:none;height:90px;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      <button onclick="postAnnouncement()" style="width:100%;margin-top:8px;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;">📤 Post Announcement</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;">Posted Announcements</div>
+    <div id="announcementsList" style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <!-- ADD STUDENT MODAL -->
 <div class="modal-overlay" id="addStudentModal">
   <div class="modal-box">
@@ -243,6 +266,7 @@
     </div>
   </div>
 </div>
+
 <!-- DELETE STUDENT MODAL -->
 <div class="modal-overlay" id="deleteStudentModal">
   <div class="modal-box" style="max-width:400px;text-align:center;">
@@ -257,11 +281,12 @@
     </div>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs, onSnapshot, addDoc, Timestamp, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAHidY4u5a0xTktf0gswedhs9Np8Zk5600",
@@ -274,7 +299,6 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
   const COLORS=['#4f8ef7','#7c5cfc','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4','#8b5cf6'];
 
   let students = [];
@@ -294,7 +318,6 @@
     document.getElementById('sidebarAvatar').textContent = user.firstName[0].toUpperCase();
     await loadStudents();
     await loadForDate();
-    // Real-time listener for attendance changes
     onSnapshot(doc(db,'attendance', currentDate), (snap) => {
       if(snap.exists()){ attendanceMap = snap.data(); renderTable(); updateSummary(); }
     });
@@ -422,9 +445,7 @@
     const id='STU-'+Date.now().toString().slice(-5);
     const colorIdx=students.length%COLORS.length;
     const studentData={id,firstName,lastName,email,grade,section,gender,colorIdx};
-    // Save student to Firestore
     await setDoc(doc(db,'students',id), studentData);
-    // Save student login credentials
     await setDoc(doc(db,'users',email),{firstName,lastName,email,role:'Student',password:id});
     students.push(studentData);
     closeAddStudent();
@@ -433,27 +454,65 @@
   };
 
   let studentToDelete=null;
-
   window.confirmDeleteStudent = function(id,name){
     studentToDelete=id;
     document.getElementById('deleteStudentName').textContent=name;
     document.getElementById('deleteStudentModal').classList.add('show');
   };
-
   window.closeDeleteModal = function(){ document.getElementById('deleteStudentModal').classList.remove('show');studentToDelete=null; };
-
   window.deleteStudent = async function(){
     if(!studentToDelete)return;
     const removed=students.find(s=>s.id===studentToDelete);
-    if(removed){
-      await deleteDoc(doc(db,'students',studentToDelete));
-      await deleteDoc(doc(db,'users',removed.email));
-    }
+    if(removed){ await deleteDoc(doc(db,'students',studentToDelete)); await deleteDoc(doc(db,'users',removed.email)); }
     students=students.filter(s=>s.id!==studentToDelete);
     closeDeleteModal(); renderTable(); updateSummary(); updateSectionFilter();
     showToast('🗑️','Student removed successfully.','absent');
   };
 
+  // ---- ANNOUNCEMENTS ----
+  window.openAnnouncements = function(){
+    document.getElementById('announcementsModal').classList.add('show');
+    loadAnnouncementsList();
+  };
+  window.closeAnnouncements = function(){ document.getElementById('announcementsModal').classList.remove('show'); };
+
+  function loadAnnouncementsList(){
+    const q = query(collection(db,'announcements'), orderBy('createdAt','desc'));
+    onSnapshot(q, (snap) => {
+      const list = document.getElementById('announcementsList');
+      if(snap.empty){
+        list.innerHTML=`<div style="text-align:center;color:var(--muted);padding:24px;font-size:13px;">No announcements yet. Post your first one above!</div>`;
+        return;
+      }
+      list.innerHTML = snap.docs.map(d => {
+        const data = d.data();
+        const date = data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+        return `<div class="ann-item">
+          <div class="ann-meta">📢 ${data.postedBy||'Teacher'} &nbsp;·&nbsp; ${date}</div>
+          <div class="ann-msg">${data.message}</div>
+          <button class="ann-delete" onclick="deleteAnnouncement('${d.id}')" title="Delete">🗑️</button>
+        </div>`;
+      }).join('');
+    });
+  }
+
+  window.postAnnouncement = async function(){
+    const text = document.getElementById('announcementText').value.trim();
+    if(!text){ return; }
+    await addDoc(collection(db,'announcements'),{
+      message: text,
+      postedBy: user.firstName+' '+(user.lastName||''),
+      createdAt: Timestamp.now()
+    });
+    document.getElementById('announcementText').value='';
+    showToast('📢','Announcement posted!','info');
+  };
+
+  window.deleteAnnouncement = async function(id){
+    await deleteDoc(doc(db,'announcements',id));
+  };
+
+  // ---- TOAST ----
   let toastTimer;
   function showToast(icon,msg,type){
     const t=document.getElementById('toast');
@@ -482,9 +541,7 @@
     for(let i=0;i<firstDay;i++)html+=`<div class="cal-day empty"></div>`;
     for(let d=1;d<=daysInMonth;d++){
       const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isToday=dateStr===todayStr;
-      const isSelected=dateStr===currentDate;
-      const classes=['cal-day',isToday?'today':'',isSelected?'selected':''].filter(Boolean).join(' ');
+      const classes=['cal-day',dateStr===todayStr?'today':'',dateStr===currentDate?'selected':''].filter(Boolean).join(' ');
       html+=`<div class="${classes}" onclick="selectCalDate('${dateStr}')">${d}</div>`;
     }
     document.getElementById('calGrid').innerHTML=html;
