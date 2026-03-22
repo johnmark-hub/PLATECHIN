@@ -143,7 +143,7 @@
   </div>
   <div class="sidebar-footer">
     <div class="user-card">
-      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div class="user-avatar" id="sidebarAvatar">T</div>
       <div class="user-info"><div class="name" id="sidebarName">Teacher</div><div class="role" id="sidebarRole">Teacher</div></div>
     </div>
     <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
@@ -258,48 +258,72 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
-<script>
-  const COLORS=['#4f8ef7','#7c5cfc','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4','#8b5cf6'];
-  function getStudents(){return JSON.parse(localStorage.getItem('edutrack_students')||'[]');}
-  function saveStudents(s){localStorage.setItem('edutrack_students',JSON.stringify(s));}
-  function getAttendanceData(){return JSON.parse(localStorage.getItem('edutrack_attendance')||'{}');}
-  function saveAttendanceData(d){localStorage.setItem('edutrack_attendance',JSON.stringify(d));}
-  function getAdmins(){return JSON.parse(localStorage.getItem('edutrack_admins')||'[]');}
-  function saveAdmins(a){localStorage.setItem('edutrack_admins',JSON.stringify(a));}
 
-  let currentDate=new Date().toISOString().split('T')[0];
-  let attendanceMap={};
-  let calYear,calMonth;
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  window.onload=function(){
-    document.getElementById('dateFilter').value=currentDate;
-    const d=new Date(currentDate+'T00:00:00');
-    calYear=d.getFullYear();calMonth=d.getMonth();
-    const user=JSON.parse(localStorage.getItem('edutrack_current_user')||'{"firstName":"Teacher","lastName":"","role":"Teacher"}');
-    document.getElementById('sidebarName').textContent=user.firstName+' '+(user.lastName||'');
-    document.getElementById('sidebarRole').textContent=user.role||'Teacher';
-    document.getElementById('sidebarAvatar').textContent=user.firstName[0].toUpperCase();
-    loadForDate();
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHidY4u5a0xTktf0gswedhs9Np8Zk5600",
+    authDomain: "edutrack-6dd6e.firebaseapp.com",
+    projectId: "edutrack-6dd6e",
+    storageBucket: "edutrack-6dd6e.firebasestorage.app",
+    messagingSenderId: "567142987996",
+    appId: "1:567142987996:web:518dae5a2f23fff569dc19"
   };
 
-  function loadForDate(){
-    currentDate=document.getElementById('dateFilter').value||currentDate;
-    const allAttendance=getAttendanceData();
-    attendanceMap=allAttendance[currentDate]?{...allAttendance[currentDate]}:{};
-    renderTable();updateSummary();updateSectionFilter();
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const COLORS=['#4f8ef7','#7c5cfc','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4','#8b5cf6'];
+
+  let students = [];
+  let attendanceMap = {};
+  let currentDate = new Date().toISOString().split('T')[0];
+  let calYear, calMonth;
+
+  const user = JSON.parse(sessionStorage.getItem('edutrack_current_user') || 'null');
+  if(!user){ window.location.href='index.html'; }
+
+  window.onload = async function(){
+    document.getElementById('dateFilter').value = currentDate;
+    const d = new Date(currentDate+'T00:00:00');
+    calYear = d.getFullYear(); calMonth = d.getMonth();
+    document.getElementById('sidebarName').textContent = user.firstName+' '+(user.lastName||'');
+    document.getElementById('sidebarRole').textContent = user.role||'Teacher';
+    document.getElementById('sidebarAvatar').textContent = user.firstName[0].toUpperCase();
+    await loadStudents();
+    await loadForDate();
+    // Real-time listener for attendance changes
+    onSnapshot(doc(db,'attendance', currentDate), (snap) => {
+      if(snap.exists()){ attendanceMap = snap.data(); renderTable(); updateSummary(); }
+    });
+  };
+
+  async function loadStudents(){
+    const snap = await getDocs(collection(db,'students'));
+    students = [];
+    snap.forEach(d => students.push(d.data()));
+    students.sort((a,b)=> a.firstName.localeCompare(b.firstName));
   }
 
+  window.loadForDate = async function(){
+    currentDate = document.getElementById('dateFilter').value || currentDate;
+    const snap = await getDoc(doc(db,'attendance', currentDate));
+    attendanceMap = snap.exists() ? snap.data() : {};
+    renderTable(); updateSummary(); updateSectionFilter();
+  };
+
   function renderTable(){
-    const students=getStudents();
-    const tbody=document.getElementById('studentTableBody');
+    const tbody = document.getElementById('studentTableBody');
     if(students.length===0){
       tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">No students yet. Click <strong style="color:var(--accent)">➕ Add Student</strong> to get started.</td></tr>`;
-      updateSummary();return;
+      updateSummary(); return;
     }
-    const search=document.getElementById('searchInput').value.toLowerCase();
-    const sectionF=document.getElementById('sectionFilter').value;
-    const statusF=document.getElementById('statusFilter').value;
-    const filtered=students.filter(s=>{
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const sectionF = document.getElementById('sectionFilter').value;
+    const statusF = document.getElementById('statusFilter').value;
+    const filtered = students.filter(s=>{
       const name=(s.firstName+' '+s.lastName).toLowerCase();
       const matchSearch=name.includes(search)||s.id.toLowerCase().includes(search);
       const matchSection=!sectionF||s.section===sectionF;
@@ -329,12 +353,10 @@
         <td style="color:var(--muted);font-size:12px">${time}</td>
       </tr>`;
     }).join('');
-    document.getElementById('totalCount').textContent=students.length;
     updateSummary();
   }
 
   function updateSummary(){
-    const students=getStudents();
     let p=0,a=0,l=0;
     students.forEach(s=>{const st=attendanceMap[s.id];if(st==='Present')p++;else if(st==='Absent')a++;else if(st==='Late')l++;});
     document.getElementById('presentCount').textContent=p;
@@ -344,98 +366,93 @@
   }
 
   function updateSectionFilter(){
-    const students=getStudents();
     const sections=[...new Set(students.map(s=>s.section))].sort();
     const sel=document.getElementById('sectionFilter');
     const current=sel.value;
     sel.innerHTML='<option value="">All Sections</option>'+sections.map(sec=>`<option ${sec===current?'selected':''}>${sec}</option>`).join('');
   }
 
-  function filterTable(){renderTable();}
+  window.filterTable = function(){ renderTable(); };
 
-  function markAttendance(studentId,status){
+  window.markAttendance = function(studentId, status){
     const now=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
     attendanceMap[studentId]=status;
     attendanceMap[studentId+'_time']=now;
     renderTable();
     showToast(status==='Present'?'✅':status==='Absent'?'❌':'⏰',`Marked as ${status}`,status.toLowerCase());
-  }
+  };
 
-  function bulkMark(status){
+  window.bulkMark = function(status){
     const checks=document.querySelectorAll('.row-check:checked');
-    let targets=checks.length>0?[...checks].map(c=>c.dataset.id):getStudents().map(s=>s.id);
+    let targets=checks.length>0?[...checks].map(c=>c.dataset.id):students.map(s=>s.id);
     const now=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
     targets.forEach(id=>{attendanceMap[id]=status;attendanceMap[id+'_time']=now;});
     renderTable();
     showToast(status==='Present'?'✅':status==='Absent'?'❌':'⏰',`${targets.length} students marked ${status}`,status.toLowerCase());
-  }
+  };
 
-  function toggleSelectAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
+  window.toggleSelectAll = function(cb){ document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked); };
 
-  function saveAttendance(){
-    const all=getAttendanceData();
-    all[currentDate]={...attendanceMap};
-    saveAttendanceData(all);
+  window.saveAttendance = async function(){
+    await setDoc(doc(db,'attendance', currentDate), attendanceMap);
     showToast('💾','Attendance saved successfully!','info');
-  }
+  };
 
-  function openAddStudent(){document.getElementById('addStudentModal').classList.add('show');}
+  window.openAddStudent = function(){ document.getElementById('addStudentModal').classList.add('show'); };
 
-  function closeAddStudent(){
+  window.closeAddStudent = function(){
     document.getElementById('addStudentModal').classList.remove('show');
     document.getElementById('addStudentAlert').className='modal-field-alert';
     ['stuFirst','stuLast','stuEmail','stuSection'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('stuGrade').value='';
     document.getElementById('stuGender').value='';
-  }
+  };
 
-  function addStudent(){
+  window.addStudent = async function(){
     const firstName=document.getElementById('stuFirst').value.trim();
     const lastName=document.getElementById('stuLast').value.trim();
-    const email=document.getElementById('stuEmail').value.trim();
+    const email=document.getElementById('stuEmail').value.trim().toLowerCase();
     const grade=document.getElementById('stuGrade').value;
     const section=document.getElementById('stuSection').value.trim();
     const gender=document.getElementById('stuGender').value;
     const alertEl=document.getElementById('addStudentAlert');
     if(!firstName||!lastName||!email||!grade||!section||!gender){alertEl.textContent='⚠️ Please fill in all fields.';alertEl.className='modal-field-alert error';return;}
-    if(!/\S+@\S+\.\S+/.test(email)){alertEl.textContent='⚠️ Please enter a valid email address.';alertEl.className='modal-field-alert error';return;}
-    const students=getStudents();
+    if(!/\S+@\S+\.\S+/.test(email)){alertEl.textContent='⚠️ Please enter a valid email.';alertEl.className='modal-field-alert error';return;}
     if(students.find(s=>s.email===email)){alertEl.textContent='⚠️ A student with this email already exists.';alertEl.className='modal-field-alert error';return;}
     const id='STU-'+Date.now().toString().slice(-5);
     const colorIdx=students.length%COLORS.length;
-    students.push({id,firstName,lastName,email,grade,section,gender,colorIdx});
-    saveStudents(students);
-    const admins=getAdmins().filter(a=>a.email!==email);
-    admins.push({firstName,lastName,email,role:'Student',password:id});
-    saveAdmins(admins);
+    const studentData={id,firstName,lastName,email,grade,section,gender,colorIdx};
+    // Save student to Firestore
+    await setDoc(doc(db,'students',id), studentData);
+    // Save student login credentials
+    await setDoc(doc(db,'users',email),{firstName,lastName,email,role:'Student',password:id});
+    students.push(studentData);
     closeAddStudent();
-    loadForDate();
+    renderTable(); updateSummary(); updateSectionFilter();
     showToast('➕',`${firstName} ${lastName} added! Email: ${email} | Password: ${id}`,'info');
-  }
+  };
 
   let studentToDelete=null;
 
-  function confirmDeleteStudent(id,name){
+  window.confirmDeleteStudent = function(id,name){
     studentToDelete=id;
     document.getElementById('deleteStudentName').textContent=name;
     document.getElementById('deleteStudentModal').classList.add('show');
-  }
+  };
 
-  function closeDeleteModal(){document.getElementById('deleteStudentModal').classList.remove('show');studentToDelete=null;}
+  window.closeDeleteModal = function(){ document.getElementById('deleteStudentModal').classList.remove('show');studentToDelete=null; };
 
-  function deleteStudent(){
+  window.deleteStudent = async function(){
     if(!studentToDelete)return;
-    let students=getStudents();
     const removed=students.find(s=>s.id===studentToDelete);
+    if(removed){
+      await deleteDoc(doc(db,'students',studentToDelete));
+      await deleteDoc(doc(db,'users',removed.email));
+    }
     students=students.filter(s=>s.id!==studentToDelete);
-    saveStudents(students);
-    if(removed){saveAdmins(getAdmins().filter(a=>a.email!==removed.email));}
-    const all=getAttendanceData();
-    Object.keys(all).forEach(date=>{delete all[date][studentToDelete];delete all[date][studentToDelete+'_time'];});
-    saveAttendanceData(all);
-    closeDeleteModal();loadForDate();
+    closeDeleteModal(); renderTable(); updateSummary(); updateSectionFilter();
     showToast('🗑️','Student removed successfully.','absent');
-  }
+  };
 
   let toastTimer;
   function showToast(icon,msg,type){
@@ -446,19 +463,18 @@
     toastTimer=setTimeout(()=>t.className='toast',2800);
   }
 
-  function logout(){localStorage.removeItem('edutrack_current_user');window.location.href='index.html';}
+  window.logout = function(){ sessionStorage.removeItem('edutrack_current_user');window.location.href='index.html'; };
 
-  function toggleCalendar(){
+  window.toggleCalendar = function(){
     const panel=document.getElementById('calendarPanel');
     const isHidden=panel.style.display==='none';
     panel.style.display=isHidden?'block':'none';
     if(isHidden)renderCalendar();
-  }
+  };
 
   function renderCalendar(){
     const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
     document.getElementById('calMonthLabel').textContent=`${months[calMonth]} ${calYear}`;
-    const allAttendance=getAttendanceData();
     const firstDay=new Date(calYear,calMonth,1).getDay();
     const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
     const todayStr=new Date().toISOString().split('T')[0];
@@ -468,17 +484,16 @@
       const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const isToday=dateStr===todayStr;
       const isSelected=dateStr===currentDate;
-      const hasData=allAttendance[dateStr]&&Object.keys(allAttendance[dateStr]).length>0;
-      const classes=['cal-day',isToday?'today':'',isSelected?'selected':'',hasData?'has-data':''].filter(Boolean).join(' ');
+      const classes=['cal-day',isToday?'today':'',isSelected?'selected':''].filter(Boolean).join(' ');
       html+=`<div class="${classes}" onclick="selectCalDate('${dateStr}')">${d}</div>`;
     }
     document.getElementById('calGrid').innerHTML=html;
     document.getElementById('calSelectedLabel').textContent=new Date(currentDate+'T00:00:00').toLocaleDateString('en-PH',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
   }
 
-  function selectCalDate(dateStr){currentDate=dateStr;document.getElementById('dateFilter').value=dateStr;loadForDate();renderCalendar();}
-  function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
-  function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+  window.selectCalDate = function(dateStr){ currentDate=dateStr;document.getElementById('dateFilter').value=dateStr;loadForDate();renderCalendar(); };
+  window.prevMonth = function(){ calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar(); };
+  window.nextMonth = function(){ calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar(); };
 </script>
 </body>
 </html>
