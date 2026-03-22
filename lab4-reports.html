@@ -106,7 +106,7 @@
   </div>
   <div class="sidebar-footer">
     <div class="user-card">
-      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div class="user-avatar" id="sidebarAvatar">T</div>
       <div class="user-info"><div class="name" id="sidebarName">Teacher</div><div class="role" id="sidebarRole">Teacher</div></div>
     </div>
     <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
@@ -134,7 +134,6 @@
     <input type="date" class="dc-input" id="weekPicker" style="display:none" onchange="loadWeeklyReport()"/>
     <span class="dc-label" style="margin-left:auto;font-size:12px;color:var(--muted)" id="reportInfo">Showing today's attendance data</span>
   </div>
-  <!-- DAILY REPORT -->
   <div id="dailyReport">
     <div class="kpi-row">
       <div class="kpi-card k0"><div class="kpi-icon">👥</div><div class="kpi-val" id="d-total">0</div><div class="kpi-label">Total Students</div></div>
@@ -144,22 +143,14 @@
       <div class="kpi-card k4"><div class="kpi-icon">📈</div><div class="kpi-val" id="d-rate">0%</div><div class="kpi-label">Attendance Rate</div><div class="kpi-sub" id="d-rate-sub">–</div></div>
     </div>
     <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-header"><div><div class="chart-title">Status Breakdown by Section</div><div class="chart-sub">Present / Absent / Late per class</div></div><span class="chart-badge">Daily</span></div>
-        <div class="chart-wrap"><canvas id="sectionBarChart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header"><div><div class="chart-title">Overall Distribution</div><div class="chart-sub">Pie breakdown for today</div></div></div>
-        <div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;"><canvas id="dailyDoughnut" style="max-height:200px;max-width:200px;"></canvas></div>
-        <div class="legend" style="justify-content:center;margin-top:14px;" id="doughnutLegend"></div>
-      </div>
+      <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Status Breakdown by Section</div><div class="chart-sub">Present / Absent / Late per class</div></div><span class="chart-badge">Daily</span></div><div class="chart-wrap"><canvas id="sectionBarChart"></canvas></div></div>
+      <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Overall Distribution</div><div class="chart-sub">Pie breakdown for today</div></div></div><div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;"><canvas id="dailyDoughnut" style="max-height:200px;max-width:200px;"></canvas></div><div class="legend" style="justify-content:center;margin-top:14px;" id="doughnutLegend"></div></div>
     </div>
     <div class="report-table-card">
       <div class="rtable-header"><h3>📋 Student Attendance Detail</h3><div class="legend"><div class="leg-item"><div class="leg-dot" style="background:var(--present)"></div> Present</div><div class="leg-item"><div class="leg-dot" style="background:var(--absent)"></div> Absent</div><div class="leg-item"><div class="leg-dot" style="background:var(--late)"></div> Late</div></div></div>
       <table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Section</th><th>Grade</th><th>Status</th><th>Time Marked</th></tr></thead><tbody id="dailyTableBody"></tbody></table>
     </div>
   </div>
-  <!-- WEEKLY REPORT -->
   <div id="weeklyReport" style="display:none">
     <div class="kpi-row">
       <div class="kpi-card k0"><div class="kpi-icon">📆</div><div class="kpi-val" id="w-days">0</div><div class="kpi-label">Days Recorded</div></div>
@@ -168,82 +159,72 @@
       <div class="kpi-card k3"><div class="kpi-icon">⏰</div><div class="kpi-val" id="w-late">0</div><div class="kpi-label">Total Late</div></div>
       <div class="kpi-card k4"><div class="kpi-icon">📊</div><div class="kpi-val" id="w-rate">0%</div><div class="kpi-label">Avg. Rate</div></div>
     </div>
-    <div class="chart-card" style="margin-bottom:16px;">
-      <div class="chart-header"><div><div class="chart-title">Daily Attendance Trend – This Week</div><div class="chart-sub">Present / Absent / Late per day</div></div><span class="chart-badge">Weekly</span></div>
-      <div class="chart-wrap"><canvas id="weeklyLineChart" style="max-height:240px;"></canvas></div>
-    </div>
+    <div class="chart-card" style="margin-bottom:16px;"><div class="chart-header"><div><div class="chart-title">Daily Attendance Trend – This Week</div><div class="chart-sub">Present / Absent / Late per day</div></div><span class="chart-badge">Weekly</span></div><div class="chart-wrap"><canvas id="weeklyLineChart" style="max-height:240px;"></canvas></div></div>
     <div class="chart-grid-3" style="margin-bottom:16px;">
-      <div class="chart-card">
-        <div class="chart-header"><div><div class="chart-title">Weekly Distribution</div><div class="chart-sub">Total status breakdown</div></div></div>
-        <div style="display:flex;align-items:center;justify-content:center;"><canvas id="weeklyDoughnut" style="max-height:180px;max-width:180px;"></canvas></div>
-        <div class="legend" style="justify-content:center;margin-top:12px;" id="weeklyDoughnutLegend"></div>
-      </div>
-      <div class="chart-card" style="grid-column:span 2;">
-        <div class="chart-header"><div><div class="chart-title">Section Performance – Weekly Average</div><div class="chart-sub">Attendance rate per section</div></div></div>
-        <div class="chart-wrap"><canvas id="sectionWeeklyBar" style="max-height:180px;"></canvas></div>
-      </div>
+      <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Weekly Distribution</div><div class="chart-sub">Total status breakdown</div></div></div><div style="display:flex;align-items:center;justify-content:center;"><canvas id="weeklyDoughnut" style="max-height:180px;max-width:180px;"></canvas></div><div class="legend" style="justify-content:center;margin-top:12px;" id="weeklyDoughnutLegend"></div></div>
+      <div class="chart-card" style="grid-column:span 2;"><div class="chart-header"><div><div class="chart-title">Section Performance – Weekly Average</div><div class="chart-sub">Attendance rate per section</div></div></div><div class="chart-wrap"><canvas id="sectionWeeklyBar" style="max-height:180px;"></canvas></div></div>
     </div>
-    <div class="report-table-card">
-      <div class="rtable-header"><h3>📆 Weekly Summary by Day</h3></div>
-      <table><thead><tr><th>Date</th><th>Day</th><th>Total</th><th>Present</th><th>Absent</th><th>Late</th><th>Not Marked</th><th>Rate</th></tr></thead><tbody id="weeklyTableBody"></tbody></table>
-    </div>
+    <div class="report-table-card"><div class="rtable-header"><h3>📆 Weekly Summary by Day</h3></div><table><thead><tr><th>Date</th><th>Day</th><th>Total</th><th>Present</th><th>Absent</th><th>Late</th><th>Not Marked</th><th>Rate</th></tr></thead><tbody id="weeklyTableBody"></tbody></table></div>
   </div>
 </main>
-<script>
-  function getStudents(){return JSON.parse(localStorage.getItem('edutrack_students')||'[]');}
-  function getAttendanceData(){return JSON.parse(localStorage.getItem('edutrack_attendance')||'{}');}
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHidY4u5a0xTktf0gswedhs9Np8Zk5600",
+    authDomain: "edutrack-6dd6e.firebaseapp.com",
+    projectId: "edutrack-6dd6e",
+    storageBucket: "edutrack-6dd6e.firebasestorage.app",
+    messagingSenderId: "567142987996",
+    appId: "1:567142987996:web:518dae5a2f23fff569dc19"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
   const CC={present:'#10b981',absent:'#ef4444',late:'#f59e0b',accent:'#4f8ef7',accent2:'#7c5cfc'};
   let charts={};
+  let allStudents=[];
+  let allAttendance={};
+
   function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-  window.onload=function(){
+  const user = JSON.parse(sessionStorage.getItem('edutrack_current_user')||'null');
+  if(!user){ window.location.href='index.html'; }
+
+  window.onload = async function(){
     const today=new Date().toISOString().split('T')[0];
     document.getElementById('dailyDatePicker').value=today;
     document.getElementById('weekPicker').value=today;
-    const user=JSON.parse(localStorage.getItem('edutrack_current_user')||'{"firstName":"Teacher","lastName":"","role":"Teacher"}');
     document.getElementById('sidebarName').textContent=user.firstName+' '+(user.lastName||'');
     document.getElementById('sidebarRole').textContent=user.role||'Teacher';
     document.getElementById('sidebarAvatar').textContent=user.firstName[0].toUpperCase();
-    seedDemoAttendance();
+    // Load all students
+    const snap=await getDocs(collection(db,'students'));
+    allStudents=[];snap.forEach(d=>allStudents.push(d.data()));
+    // Load all attendance docs
+    const attSnap=await getDocs(collection(db,'attendance'));
+    allAttendance={};attSnap.forEach(d=>allAttendance[d.id]=d.data());
     loadDailyReport();
   };
 
-  function seedDemoAttendance(){
-    const all=getAttendanceData();
-    const students=getStudents();
-    if(students.length===0)return;
-    const today=new Date();
-    const weekStart=getWeekStart(today.toISOString().split('T')[0]);
-    const statuses=['Present','Present','Present','Present','Late','Absent'];
-    for(let i=0;i<5;i++){
-      const d=new Date(weekStart);d.setDate(d.getDate()+i);
-      const dateStr=d.toISOString().split('T')[0];
-      if(!all[dateStr]){
-        all[dateStr]={};
-        students.forEach(s=>{
-          const st=statuses[Math.floor(Math.random()*statuses.length)];
-          all[dateStr][s.id]=st;
-          all[dateStr][s.id+'_time']=`${7+Math.floor(Math.random()*3)}:${String(Math.floor(Math.random()*60)).padStart(2,'0')} AM`;
-        });
-      }
-    }
-    localStorage.setItem('edutrack_attendance',JSON.stringify(all));
-  }
-
-  function switchReport(type){
+  window.switchReport = function(type){
     document.querySelectorAll('.rtab').forEach((b,i)=>{b.classList.toggle('active',(type==='daily'&&i===0)||(type==='weekly'&&i===1));});
     document.getElementById('dailyReport').style.display=type==='daily'?'block':'none';
     document.getElementById('weeklyReport').style.display=type==='weekly'?'block':'none';
     document.getElementById('weekLabel').style.display=type==='weekly'?'inline':'none';
     document.getElementById('weekPicker').style.display=type==='weekly'?'inline':'none';
     if(type==='daily')loadDailyReport();else loadWeeklyReport();
-  }
+  };
 
-  function loadDailyReport(){
+  window.loadDailyReport = async function(){
     const date=document.getElementById('dailyDatePicker').value;
-    const students=getStudents();
-    const all=getAttendanceData();
-    const dayData=all[date]||{};
+    // Refresh from Firestore
+    const snap=await getDoc(doc(db,'attendance',date));
+    const dayData=snap.exists()?snap.data():{};
+    allAttendance[date]=dayData;
+    const students=allStudents;
     const total=students.length;
     let present=0,absent=0,late=0,unmarked=0;
     students.forEach(s=>{const st=dayData[s.id];if(st==='Present')present++;else if(st==='Absent')absent++;else if(st==='Late')late++;else unmarked++;});
@@ -276,32 +257,31 @@
     destroyChart('sectionBarChart');
     const sbCtx=document.getElementById('sectionBarChart').getContext('2d');
     charts['sectionBarChart']=new Chart(sbCtx,{type:'bar',data:{labels:sectionData.map(d=>d.section),datasets:[{label:'Present',data:sectionData.map(d=>d.present),backgroundColor:CC.present,borderRadius:4},{label:'Absent',data:sectionData.map(d=>d.absent),backgroundColor:CC.absent,borderRadius:4},{label:'Late',data:sectionData.map(d=>d.late),backgroundColor:CC.late,borderRadius:4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#6b7a99',font:{family:'DM Sans',size:11}}}},scales:{x:{grid:{color:'rgba(30,45,74,0.5)'},ticks:{color:'#6b7a99',font:{family:'DM Sans'}}},y:{grid:{color:'rgba(30,45,74,0.5)'},ticks:{color:'#6b7a99',font:{family:'DM Sans'},stepSize:1},beginAtZero:true}}}});
-  }
+  };
 
   function getWeekStart(dateStr){
-    const d=new Date(dateStr+'T00:00:00');
-    const day=d.getDay();
-    const diff=d.getDate()-day+(day===0?-6:1);
-    d.setDate(diff);
-    return d.toISOString().split('T')[0];
+    const d=new Date(dateStr+'T00:00:00');const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);d.setDate(diff);return d.toISOString().split('T')[0];
   }
 
-  function loadWeeklyReport(){
+  window.loadWeeklyReport = async function(){
     const baseDate=document.getElementById('weekPicker').value;
     const weekStart=getWeekStart(baseDate);
-    const students=getStudents();
-    const all=getAttendanceData();
+    const students=allStudents;
+    // Refresh attendance for the week
     const days=[];
     for(let i=0;i<7;i++){const d=new Date(weekStart+'T00:00:00');d.setDate(d.getDate()+i);days.push(d.toISOString().split('T')[0]);}
+    for(const dt of days){
+      const snap=await getDoc(doc(db,'attendance',dt));
+      allAttendance[dt]=snap.exists()?snap.data():{};
+    }
     const weekDays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const dayNames=days.map(dt=>new Date(dt+'T00:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric'}));
     let totPresent=0,totAbsent=0,totLate=0,daysRecorded=0;
     const dayRows=days.map((dt,i)=>{
-      const dayData=all[dt]||{};
-      const hasData=Object.keys(dayData).length>0;
+      const dayData=allAttendance[dt]||{};
+      const hasData=Object.keys(dayData).filter(k=>!k.endsWith('_time')).length>0;
       if(hasData)daysRecorded++;
-      const total=students.length;
-      let p=0,a=0,l=0,u=0;
+      const total=students.length;let p=0,a=0,l=0,u=0;
       students.forEach(s=>{const st=dayData[s.id];if(st==='Present')p++;else if(st==='Absent')a++;else if(st==='Late')l++;else u++;});
       totPresent+=p;totAbsent+=a;totLate+=l;
       const rate=total>0&&hasData?Math.round(((p+l)/total)*100):null;
@@ -327,34 +307,30 @@
     charts['weeklyDoughnut']=new Chart(wdCtx,{type:'doughnut',data:{labels:['Present','Absent','Late'],datasets:[{data:[totPresent,totAbsent,totLate],backgroundColor:[CC.present,CC.absent,CC.late],borderColor:'#161f35',borderWidth:3,hoverOffset:6}]},options:{cutout:'60%',plugins:{legend:{display:false}}}});
     document.getElementById('weeklyDoughnutLegend').innerHTML=['Present','Absent','Late'].map((l,i)=>{const colors=[CC.present,CC.absent,CC.late];const vals=[totPresent,totAbsent,totLate];return `<div class="leg-item"><div class="leg-dot" style="background:${colors[i]}"></div> ${l} (${vals[i]})</div>`;}).join('');
     const sections=[...new Set(students.map(s=>s.section))].sort();
-    const sectionRates=sections.map(sec=>{const ss=students.filter(s=>s.section===sec);let total=0,present=0,late=0;days.forEach(dt=>{const dayData=all[dt]||{};if(Object.keys(dayData).length>0){ss.forEach(s=>{total++;if(dayData[s.id]==='Present')present++;if(dayData[s.id]==='Late')late++;});}});return total>0?Math.round(((present+late)/total)*100):0;});
+    const sectionRates=sections.map(sec=>{const ss=students.filter(s=>s.section===sec);let total=0,present=0,late=0;days.forEach(dt=>{const dayData=allAttendance[dt]||{};if(Object.keys(dayData).length>0){ss.forEach(s=>{total++;if(dayData[s.id]==='Present')present++;if(dayData[s.id]==='Late')late++;});}});return total>0?Math.round(((present+late)/total)*100):0;});
     destroyChart('sectionWeeklyBar');
     const swCtx=document.getElementById('sectionWeeklyBar').getContext('2d');
     charts['sectionWeeklyBar']=new Chart(swCtx,{type:'bar',data:{labels:sections,datasets:[{label:'Attendance Rate %',data:sectionRates,backgroundColor:sectionRates.map(r=>r>=80?CC.present:r>=60?CC.late:CC.absent),borderRadius:6}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(30,45,74,0.5)'},ticks:{color:'#6b7a99',callback:v=>v+'%'},max:100,beginAtZero:true},y:{grid:{color:'rgba(30,45,74,0.5)'},ticks:{color:'#6b7a99',font:{family:'DM Sans'}}}}}});
-  }
+  };
 
-  function exportCSV(){
-    const students=getStudents();
-    const all=getAttendanceData();
+  window.exportCSV = function(){
+    const students=allStudents;
     const isWeekly=document.querySelector('.rtab.active').textContent.includes('Weekly');
     let rows=[['Student Name','Student ID','Section','Grade','Date','Status','Time']];
     if(!isWeekly){
       const date=document.getElementById('dailyDatePicker').value;
-      const dayData=all[date]||{};
+      const dayData=allAttendance[date]||{};
       students.forEach(s=>{rows.push([`${s.firstName} ${s.lastName}`,s.id,s.section,s.grade,date,dayData[s.id]||'Not Marked',dayData[s.id+'_time']||'—']);});
     } else {
       const baseDate=document.getElementById('weekPicker').value;
       const weekStart=getWeekStart(baseDate);
-      for(let i=0;i<7;i++){const d=new Date(weekStart+'T00:00:00');d.setDate(d.getDate()+i);const dt=d.toISOString().split('T')[0];const dayData=all[dt]||{};if(Object.keys(dayData).length>0){students.forEach(s=>{rows.push([`${s.firstName} ${s.lastName}`,s.id,s.section,s.grade,dt,dayData[s.id]||'Not Marked',dayData[s.id+'_time']||'—']);});}}
+      for(let i=0;i<7;i++){const d=new Date(weekStart+'T00:00:00');d.setDate(d.getDate()+i);const dt=d.toISOString().split('T')[0];const dayData=allAttendance[dt]||{};if(Object.keys(dayData).length>0){students.forEach(s=>{rows.push([`${s.firstName} ${s.lastName}`,s.id,s.section,s.grade,dt,dayData[s.id]||'Not Marked',dayData[s.id+'_time']||'—']);});}}
     }
     const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
-    const a=document.createElement('a');
-    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-    a.download=`EduTrack_Attendance_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-  }
+    const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`EduTrack_${new Date().toISOString().split('T')[0]}.csv`;a.click();
+  };
 
-  function logout(){localStorage.removeItem('edutrack_current_user');window.location.href='index.html';}
+  window.logout = function(){ sessionStorage.removeItem('edutrack_current_user');window.location.href='index.html'; };
 </script>
 </body>
 </html>
